@@ -18,10 +18,10 @@ typedef enum PlayerState_e
 {
     PLAYER_IDLE,
     PLAYER_FALLING,
-    //PLAYER_WALKING,
-    //PLAYER_RUNNING,
-    //PLAYER_SKIDDING,
-    //PLAYER_DYING
+    PLAYER_WALKING,
+    PLAYER_RUNNING,
+    PLAYER_SKIDDING,
+    PLAYER_DYING
 } PlayerState;
 
 typedef struct Player_s
