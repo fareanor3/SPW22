@@ -1,9 +1,9 @@
 ﻿#include "Player.h"
-#include "../SPW/Scene/LevelScene.h"
-#include "../SPW/GameObject/Camera/MainCamera.h"
-#include "../SPW/Utils/Renderer.h"
-#include "../SPW/GameObject/Enemy/Enemy.h"
-#include "../SPW/GameObject/Collectable/Collectable.h"
+#include "../Scene/LevelScene.h"
+#include "Camera/MainCamera.h"
+#include "../Utils/Renderer.h"
+#include "Enemy/Enemy.h"
+#include "Collectable/Collectable.h"
 
 // Object virtual methods
 void Player_VM_Destructor(void* self);
@@ -61,7 +61,7 @@ void Player_OnCollisionEnter(PE_Collision* collision)
         // Calcule l'angle entre la normale de contact et le vecteur "UP"
         // L'angle vaut :
         // * 0 si le joueur est parfaitement au dessus de l'ennemi,
-        // * 90 s'il est � gauche ou � droite
+        // * 90 s'il est à gauche ou à droite
         // * 180 s'il est en dessous
         float angleUp = PE_Vec2_AngleDeg(manifold.normal, PE_Vec2_Up);
         if (angleUp < 55.0f)
@@ -83,7 +83,6 @@ void Player_OnCollisionEnter(PE_Collision* collision)
     }
 }
 
-
 void Player_OnCollisionStay(PE_Collision* collision)
 {
     PE_Manifold manifold = PE_Collision_GetManifold(collision);
@@ -94,8 +93,8 @@ void Player_OnCollisionStay(PE_Collision* collision)
 
     if (PE_Collider_CheckCategory(otherCollider, FILTER_COLLECTABLE))
     {
-        // D�sactive la collision avec un objet
-        // Evite d'arr�ter le joueur quand il prend un coeur
+        // Désactive la collision avec un objet
+        // Evite d'arrêter le joueur quand il prend un coeur
         PE_Collision_SetEnabled(collision, false);
         return;
     }
@@ -105,7 +104,7 @@ void Player_OnCollisionStay(PE_Collision* collision)
 
         if (angleUp <= 55.0f)
         {
-            // R�soud la collision en d�pla�ant le joueur vers le haut
+            // Résoud la collision en déplaçant le joueur vers le haut
             // Evite de "glisser" sur les pentes si le joueur ne bouge pas
             PE_Collision_ResolveUp(collision);
         }
@@ -119,7 +118,7 @@ void Player_CreateAnimator(Player* player, void* scene)
     RE_AtlasPart* part = NULL;
     void* anim = NULL;
 
-    // Cr�e l'animateur
+    // Crée l'animateur
     RE_Animator* animator = RE_Animator_New();
     AssertNew(animator);
 
@@ -164,7 +163,6 @@ void Player_CreateAnimator(Player* player, void* scene)
     //todo : add animation for jump and Dying
     /*part = Re_Atlas_GetPart(atlas, "Dying");
     AssertNew(part);
-
     anim = Re_Animator_CreateTextureAnim(animator, "Dying", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
@@ -188,7 +186,7 @@ void Player_Constructor(void* self, void* scene)
     player->m_fireflyCount = 0;
     player->m_heartCount = 2;
 
-    // Le joueur doit �tre r�initialliser � chaque fois qu'il meurt
+    // Le joueur doit être réinitialliser à chaque fois qu'il meurt
     Scene_SetToRespawn(scene, player, true);
 
     Player_CreateAnimator(player, scene);
@@ -205,7 +203,7 @@ void Player_VM_Start(void* self)
     PE_ColliderDef colliderDef = { 0 };
     PE_Collider* collider = NULL;
 
-    // Cr�e le corps
+    // Crée le corps
     PE_BodyDef_SetDefault(&bodyDef);
     bodyDef.type = PE_DYNAMIC_BODY;
     bodyDef.position = GameBody_GetStartPosition(player);
@@ -218,7 +216,7 @@ void Player_VM_Start(void* self)
     AssertNew(body);
     GameBody_SetBody(player, body);
 
-    // Cr�e le collider
+    // Crée le collider
     PE_ColliderDef_SetDefault(&colliderDef);
     colliderDef.friction = 1.0f;
     colliderDef.filter.categoryBits = FILTER_PLAYER;
@@ -230,17 +228,17 @@ void Player_VM_Start(void* self)
     collider = PE_Body_CreateCollider(body, &colliderDef);
     AssertNew(collider);
 
-    // D�finit les callbacks de collisions
+    // Définit les callbacks de collisions
     PE_Collider_SetOnCollisionEnter(collider, Player_OnCollisionEnter);
     PE_Collider_SetOnCollisionStay(collider, Player_OnCollisionStay);
 
-    // Joue l'animation par d�faut
+    // Joue l'animation par défaut
     RE_Animator_PlayAnimation(player->m_animator, "Idle");
 }
 
 void Player_Damage(Player* player)
 {
-    // M�thode appell�e par un ennemi qui touche le joueur
+    // Méthode appellée par un ennemi qui touche le joueur
     Player_Kill(player);
 }
 
@@ -272,7 +270,7 @@ static bool Player_WakeUpCallback(PE_Collider* collider, void* data)
 
 void Player_WakeUpSurroundings(Player* player)
 {
-    // Fonction utilis�e pour r�veiller les corps autour du joueur.
+    // Fonction utilisée pour réveiller les corps autour du joueur.
     // Cela permet d'optimiser le jeu pour ne simuler que les corps
     // proche du joueur.
     PE_Body* body = GameBody_GetBody((GameBody*)player);
@@ -298,7 +296,7 @@ void Player_VM_FixedUpdate(void* self)
     PE_Vec2 velocity = PE_Body_GetLocalVelocity(body);
     PE_Vec2 position = PE_Body_GetPosition(body);
 
-    // R�veille les corps autour du joueur
+    // Réveille les corps autour du joueur
     Player_WakeUpSurroundings(player);
 
     // Tue le joueur s'il tombe dans un trou
@@ -309,19 +307,19 @@ void Player_VM_FixedUpdate(void* self)
     }
 
     //--------------------------------------------------------------------------
-    // D�tection du sol
+    // Détection du sol
 
     bool onGround = false;
     PE_Vec2 gndNormal = PE_Vec2_Up;
 
     // Lance deux rayons vers le bas ayant pour origines
     // les coins gauche et droit du bas du collider du joueur
-    // Ces deux rayons sont dessin�s en jaune dans DrawGizmos()
+    // Ces deux rayons sont dessinés en jaune dans DrawGizmos()
     PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.35f, 0.0f));
     PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.35f, 0.0f));
 
     // Les rayons ne touchent que des colliders solides (non trigger)
-    // ayant la cat�gorie FILTER_TERRAIN
+    // ayant la catégorie FILTER_TERRAIN
     PE_RayCastHit hitL = PE_World_RayCast(
         world, originL, PE_Vec2_Down, 0.1f, FILTER_TERRAIN, true
     );
@@ -331,13 +329,13 @@ void Player_VM_FixedUpdate(void* self)
 
     if (hitL.collider != NULL)
     {
-        // Le rayon gauche � touch� le sol
+        // Le rayon gauche à touché le sol
         onGround = true;
         gndNormal = hitL.normal;
     }
     if (hitR.collider != NULL)
     {
-        // Le rayon droit � touch� le sol
+        // Le rayon droit à touché le sol
         onGround = true;
         gndNormal = hitR.normal;
     }
@@ -345,7 +343,7 @@ void Player_VM_FixedUpdate(void* self)
     //--------------------------------------------------------------------------
     // Etat du joueur
 
-    // D�termine l'�tat du joueur et change l'animation si n�cessaire
+    // Détermine l'état du joueur et change l'animation si nécessaire
     if (onGround)
     {
         if (player->m_state != PLAYER_IDLE && velocity.x == 0.0f)
@@ -382,31 +380,30 @@ void Player_VM_FixedUpdate(void* self)
 
     // Orientation du joueur
     // Utilisez player->m_hDirection qui vaut :
-    // *  0.0f si le joueur n'acc�l�re pas ;
-    // * +1.0f si le joueur acc�l�re vers la droite ;
-    // * -1.0f si le joueur acc�l�re vers la gauche.
+    // *  0.0f si le joueur n'accélère pas ;
+    // * +1.0f si le joueur accélère vers la droite ;
+    // * -1.0f si le joueur accélère vers la gauche.
     player->m_facingRight = true;
 
-    if (player->m_hDirection < 0.0f)
-    {
-        player->m_facingRight = false;
-    }
+    // s'orriende la direction gauche quand on touche a fleche
+	if (player->m_hDirection < 0.0f)
+	{
+		player->m_facingRight = false;
+	}
 
     //--------------------------------------------------------------------------
     // Modification de la vitesse et application des forces
 
     // Application des forces
-    // D�finit la force d'acc�l�ration horizontale du joueur
+    // Définit la force d'accélération horizontale du joueur
     PE_Vec2 force = PE_Vec2_Scale(PE_Vec2_Right, 15.0f * player->m_hDirection);
     PE_Body_ApplyForce(body, force);
 
     // Limite la vitesse horizontale
     float maxHSpeed = 9.f;
+    velocity.x = Float_Clamp(velocity.x, -maxHSpeed, maxHSpeed);
 
-    //todo fixer la glissade pour pas glisser sans accelerer
-
-
-    // Saut si le jouer est sur le sol
+    // Saut
     if (player->m_jump)
     {
         player->m_jump = false;
@@ -420,10 +417,10 @@ void Player_VM_FixedUpdate(void* self)
     }
 
     // Remarques :
-    // Le facteur de gravit� peut �tre modifi� avec l'instruction
+    // Le facteur de gravité peut être modifié avec l'instruction
     // -> PE_Body_SetGravityScale(body, 1.0f);
-    // pour faire des sauts de hauteurs diff�rentes.
-    // La physique peut �tre diff�rente si le joueur touche ou non le sol.
+    // pour faire des sauts de hauteurs différentes.
+    // La physique peut être différente si le joueur touche ou non le sol.
 
     PE_Body_SetVelocity(body, velocity);
 }
@@ -480,7 +477,7 @@ void Player_VM_Destructor(void* self)
 
     RE_Animator_Delete(player->m_animator);
 
-    // Destructeur de la classe m�re
+    // Destructeur de la classe mère
     Object_SuperDestroy(self, Class_Player);
 }
 
@@ -498,7 +495,7 @@ void Player_VM_DrawGizmos(void* self)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     Renderer_DrawVector(renderer, camera, position, velocity);
 
-    // Dessine en jaune les rayons pour la d�tection du sol
+    // Dessine en jaune les rayons pour la détection du sol
     PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.35f, 0.0f));
     PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.35f, 0.0f));
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
@@ -513,40 +510,14 @@ void Player_VM_Update(void* self)
     InputManager* inputManager = Scene_GetInputManager(scene);
     ControlsInput* controls = InputManager_GetControls(inputManager);
 
-    // Met � jour les animations du joueur
+    // Met à jour les animations du joueur
     RE_Animator_Update(player->m_animator, g_time);
 
-    // Sauvegarde les contr�les du joueur pour modifier
+    // Sauvegarde les contrôles du joueur pour modifier
     // sa physique au prochain FixedUpdate()
     if (controls->jumpPressed)
     {
         player->m_jump = true;
     }
     player->m_hDirection = controls->hAxis;
-}
-
-// Fonctions INLINE dans le TP
-
-int Player_GetLifeCount(const void* self)
-{
-    Player* player = Object_Cast(self, Class_Player);
-    return player->m_lifeCount;
-}
-
-int Player_GetFireflyCount(const void* self)
-{
-    Player* player = Object_Cast(self, Class_Player);
-    return player->m_fireflyCount;
-}
-
-int Player_GetHeartCount(const void* self)
-{
-    Player* player = Object_Cast(self, Class_Player);
-    return player->m_heartCount;
-}
-
-void Player_Bounce(void* self)
-{
-    Player* player = Object_Cast(self, Class_Player);
-    player->m_bounce = true;
 }
