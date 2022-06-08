@@ -33,8 +33,11 @@ typedef struct Player_s
     RE_Animator *m_animator;
 
     int m_state;
+    int m_JumpNumber;
 
     float m_hDirection;
+    float m_JumpTime;
+    float m_ImpulseTime;
     bool m_jump;
     bool m_bounce;
     bool m_facingRight;

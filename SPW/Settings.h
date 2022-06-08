@@ -37,8 +37,8 @@ extern RE_Timer *g_time;
 void SPW_Init();
 void SPW_Quit();
 
-#define HD_WIDTH 1600//1280
-#define HD_HEIGHT 900//720
+#define HD_WIDTH 1280
+#define HD_HEIGHT 720
 
 #define FHD_WIDTH 1920
 #define FHD_HEIGHT 1080

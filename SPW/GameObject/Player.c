@@ -149,7 +149,7 @@ void Player_CreateAnimator(Player* player, void* scene)
     anim = RE_Animator_CreateTextureAnim(animator, "Running", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, -1);
-    RE_Animation_SetCycleTime(anim, 0.2f);
+    RE_Animation_SetCycleTime(anim, 0.3f);
 
     // Animation "Skidding"
     part = RE_Atlas_GetPart(atlas, "Skidding");
@@ -158,7 +158,6 @@ void Player_CreateAnimator(Player* player, void* scene)
     anim = RE_Animator_CreateTextureAnim(animator, "Skidding", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
-    RE_Animation_SetCycleTime(anim, 0.1f);
 
     //todo : add animation for jump and Dying
     /*part = Re_Atlas_GetPart(atlas, "Dying");
@@ -181,6 +180,7 @@ void Player_Constructor(void* self, void* scene)
     player->m_hDirection = 0.0f;
     player->m_facingRight = true;
     player->m_jump = false;
+    player->m_JumpTime = 0.0f;
 
     player->m_lifeCount = 5;
     player->m_fireflyCount = 0;
@@ -245,6 +245,7 @@ void Player_Damage(Player* player)
 void Player_Kill(Player* player)
 {
     Scene* scene = GameObject_GetScene((GameObject*)player);
+	player->m_fireflyCount = 0;
     Scene_Respawn(scene);
 }
 
@@ -291,6 +292,9 @@ void Player_VM_FixedUpdate(void* self)
     Player* player = Object_Cast(self, Class_Player);
     Scene* scene = GameObject_GetScene(self);
 
+    InputManager* inputManager = Scene_GetInputManager(scene);
+    ControlsInput* controls = InputManager_GetControls(inputManager);
+	
     PE_World* world = Scene_GetWorld(scene);
     PE_Body* body = GameBody_GetBody(self);
     PE_Vec2 velocity = PE_Body_GetLocalVelocity(body);
@@ -346,21 +350,22 @@ void Player_VM_FixedUpdate(void* self)
     // Détermine l'état du joueur et change l'animation si nécessaire
     if (onGround)
     {
-        if (player->m_state != PLAYER_IDLE && velocity.x == 0.0f)
-        {
-            player->m_state = PLAYER_IDLE;
-            RE_Animator_PlayAnimation(player->m_animator, "Idle");
+        if (velocity.x != 0.0f) {
+            if ((velocity.x > 0.0f && player->m_hDirection > 0.0f) || (velocity.x < 0.0f && player->m_hDirection < 0.0f)) {
+                if (player->m_state != PLAYER_RUNNING) {
+                    player->m_state = PLAYER_RUNNING;
+                    RE_Animator_PlayAnimation(player->m_animator, "Running");
+                }
+            }
+            else if (player->m_state == PLAYER_RUNNING) {
+                player->m_state = PLAYER_SKIDDING;
+                RE_Animator_PlayAnimation(player->m_animator, "Skidding");
+            }
         }
-        else if (player->m_state != PLAYER_RUNNING && player->m_state != PLAYER_SKIDDING && velocity.x != 0.0f)
-        {
-            player->m_state = PLAYER_RUNNING;
-            RE_Animator_PlayAnimation(player->m_animator, "Running");
-        }
-        else if (player->m_state != PLAYER_RUNNING && player->m_state != PLAYER_IDLE && (player->m_facingRight && velocity.x < -0.3) || (player->m_facingRight == false && velocity.x > 0.3))
-        {
-            player->m_state = PLAYER_SKIDDING;
-            RE_Animator_PlayAnimation(player->m_animator, "Skidding");
-        }
+        else if (player->m_state != PLAYER_IDLE) {
+			player->m_state = PLAYER_IDLE;
+			RE_Animator_PlayAnimation(player->m_animator, "Idle");
+		}
         /*
         else if (player->m_state != PLAYER_DYING)
         {
@@ -390,7 +395,6 @@ void Player_VM_FixedUpdate(void* self)
 	{
 		player->m_facingRight = false;
 	}
-
     //--------------------------------------------------------------------------
     // Modification de la vitesse et application des forces
 
@@ -404,11 +408,42 @@ void Player_VM_FixedUpdate(void* self)
     velocity.x = Float_Clamp(velocity.x, -maxHSpeed, maxHSpeed);
 
     // Saut
-    if (player->m_jump)
-    {
-        player->m_jump = false;
-        velocity.y = 15.0f;
+	
+	bool jumpflag = false;
+    float MaxTimeFlyInput = 0.1f;
+	
+    if (!onGround ) {
+        player->m_JumpTime += RE_Timer_GetUnscaledDelta(g_time);
+        if (player->m_JumpNumber < 1) {
+            if (player->m_jump) {
+                velocity.y = 15.0f;
+                player->m_jump = false;
+            }
+		}
     }
+    if (onGround) {
+ 
+		player->m_JumpNumber = 0;
+        if (player->m_JumpTime < MaxTimeFlyInput && player-> m_jump) {
+            velocity.y = 15.0f;
+			player->m_JumpNumber++;
+			player->m_JumpTime = 0.0f;
+        }
+        if (player->m_jump) {
+            velocity.y = 15.0f;
+            player->m_JumpNumber++;
+            player->m_jump = false;
+        }
+    }
+
+	// saut modéré
+    if (controls->jumpDown ) {
+        PE_Body_SetGravityScale(body, 0.6f);
+    }
+    else {
+        PE_Body_SetGravityScale(body, 1.0f);
+    }
+		
     // Rebond sur les ennemis
     if (player->m_bounce)
     {
@@ -515,9 +550,8 @@ void Player_VM_Update(void* self)
 
     // Sauvegarde les contrôles du joueur pour modifier
     // sa physique au prochain FixedUpdate()
-    if (controls->jumpPressed)
-    {
-        player->m_jump = true;
-    }
+        if (controls->jumpPressed){
+            player->m_jump = true;
+        }
     player->m_hDirection = controls->hAxis;
 }
