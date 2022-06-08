@@ -1,4 +1,4 @@
-#include "Player.h"
+ï»¿#include "Player.h"
 #include "../Scene/LevelScene.h"
 #include "Camera/MainCamera.h"
 #include "../Utils/Renderer.h"
@@ -61,7 +61,7 @@ void Player_OnCollisionEnter(PE_Collision *collision)
         // Calcule l'angle entre la normale de contact et le vecteur "UP"
         // L'angle vaut :
         // * 0 si le joueur est parfaitement au dessus de l'ennemi,
-        // * 90 s'il est à gauche ou à droite
+        // * 90 s'il est Ã  gauche ou Ã  droite
         // * 180 s'il est en dessous
         float angleUp = PE_Vec2_AngleDeg(manifold.normal, PE_Vec2_Up);
         if (angleUp < 55.0f)
@@ -90,11 +90,17 @@ void Player_OnCollisionStay(PE_Collision *collision)
     PE_Body *otherBody = PE_Collision_GetOtherBody(collision);
     PE_Collider *otherCollider = PE_Collision_GetOtherCollider(collision);
     Player *player = (Player *)GameBody_GetFromBody(thisBody);
-
+	
+    if (player->m_state == PLAYER_DYING)
+    {
+        PE_Collision_SetEnabled(collision, false);
+        return;
+    }
+	
     if (PE_Collider_CheckCategory(otherCollider, FILTER_COLLECTABLE))
     {
-        // Désactive la collision avec un objet
-        // Evite d'arrêter le joueur quand il prend un coeur
+        // DÃ©sactive la collision avec un objet
+        // Evite d'arrÃªter le joueur quand il prend un coeur
         PE_Collision_SetEnabled(collision, false);
         return;
     }
@@ -104,7 +110,7 @@ void Player_OnCollisionStay(PE_Collision *collision)
 
         if (angleUp <= 55.0f)
         {
-            // Résoud la collision en déplaçant le joueur vers le haut
+            // RÃ©soud la collision en dÃ©plaÃ§ant le joueur vers le haut
             // Evite de "glisser" sur les pentes si le joueur ne bouge pas
             PE_Collision_ResolveUp(collision);
         }
@@ -118,7 +124,7 @@ void Player_CreateAnimator(Player *player, void *scene)
     RE_AtlasPart *part = NULL;
     void *anim = NULL;
 
-    // Crée l'animateur
+    // CrÃ©e l'animateur
     RE_Animator *animator = RE_Animator_New();
     AssertNew(animator);
 
@@ -158,15 +164,32 @@ void Player_CreateAnimator(Player *player, void *scene)
     anim = RE_Animator_CreateTextureAnim(animator, "Skidding", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
-
-    //todo : add animation for jump and Dying
-    /*part = Re_Atlas_GetPart(atlas, "Dying");
+	
+    // Animation "Dying"
+    part = RE_Atlas_GetPart(atlas, "Dying");
     AssertNew(part);
-    anim = Re_Animator_CreateTextureAnim(animator, "Dying", part);
+
+    anim = RE_Animator_CreateTextureAnim(animator, "Dying", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
-    RE_Animation_SetCycleTime(anim, 0.2f);
-    */
+
+	// Animation "landing down"
+    Vec2 vectDown1 = { .x = 1.0f, . y = 1.0f };
+    Vec2 vectDown2 = { .x = 1.1f, . y = 1.1f };
+    anim = RE_Animator_CreateScaleAnim(animator, "Landing Down", vectDown1, vectDown2);
+    AssertNew(anim);
+    RE_Animation_SetCycleCount(anim, 1);
+	RE_Animation_SetCycleTime(anim, 0.2f);
+    RE_Animation_AddFlags(anim, RE_ANIM_ALTERNATE);
+
+	// Animation "Landing Up"
+	Vec2 vectUp1 = { .x = 1.0f, . y = 1.0f };
+	Vec2 vectUp2 = { .x = 0.9f, . y = 0.9f };
+	anim = RE_Animator_CreateScaleAnim(animator, "Landing Up", vectUp1, vectUp2);
+	AssertNew(anim);
+	RE_Animation_SetCycleCount(anim, 1);
+	RE_Animation_SetCycleTime(anim, 0.2f);
+	RE_Animation_AddFlags(anim, RE_ANIM_ALTERNATE);
 }
 
 void Player_Constructor(void *self, void *scene)
@@ -186,7 +209,7 @@ void Player_Constructor(void *self, void *scene)
     player->m_fireflyCount = 0;
     player->m_heartCount = 2;
 
-    // Le joueur doit être réinitialliser à chaque fois qu'il meurt
+    // Le joueur doit Ãªtre rÃ©initialliser Ã  chaque fois qu'il meurt
     Scene_SetToRespawn(scene, player, true);
 
     Player_CreateAnimator(player, scene);
@@ -197,16 +220,18 @@ void Player_VM_Start(void *self)
     Player *player = Object_Cast(self, Class_Player);
     Scene *scene = GameObject_GetScene(self);
 
+    LevelScene_SetStartPosition(scene, GameBody_GetStartPosition(player));
+
     PE_World *world = Scene_GetWorld(scene);
     PE_Body *body = NULL;
     PE_BodyDef bodyDef = { 0 };
     PE_ColliderDef colliderDef = { 0 };
     PE_Collider *collider = NULL;
 
-    // Crée le corps
+    // CrÃ©e le corps
     PE_BodyDef_SetDefault(&bodyDef);
     bodyDef.type = PE_DYNAMIC_BODY;
-    bodyDef.position = GameBody_GetStartPosition(player);
+    bodyDef.position = LevelScene_GetStartPosition(scene);
     bodyDef.name = "Player";
     bodyDef.xDamping = 0.0f;
     bodyDef.yDamping = 0.0f;
@@ -216,7 +241,7 @@ void Player_VM_Start(void *self)
     AssertNew(body);
     GameBody_SetBody(player, body);
 
-    // Crée le collider
+    // CrÃ©e le collider
     PE_ColliderDef_SetDefault(&colliderDef);
     colliderDef.friction = 1.0f;
     colliderDef.filter.categoryBits = FILTER_PLAYER;
@@ -228,26 +253,33 @@ void Player_VM_Start(void *self)
     collider = PE_Body_CreateCollider(body, &colliderDef);
     AssertNew(collider);
 
-    // Définit les callbacks de collisions
+    // DÃ©finit les callbacks de collisions
     PE_Collider_SetOnCollisionEnter(collider, Player_OnCollisionEnter);
     PE_Collider_SetOnCollisionStay(collider, Player_OnCollisionStay);
 
-    // Joue l'animation par défaut
+    // Joue l'animation par dÃ©faut
     RE_Animator_PlayAnimation(player->m_animator, "Idle");
 }
 
-void Player_Damage(Player *player)
+void Player_Damage(Player* player)
 {
-    // Méthode appellée par un ennemi qui touche le joueur
+    // MÃ©thode appellÃ©e par un ennemi qui touche le joueur
     player->m_heartCount--;
-    if ((player->m_heartCount) <= 0)
-        Player_Kill(player);
+    if (player->m_heartCount <= 0)
+    {
+        player->m_state = PLAYER_DYING;
+    }
+    return;
 }
 
-void Player_Kill(Player *player)
+void Player_Kill(Player* player)
 {
-    Scene *scene = GameObject_GetScene((GameObject *)player);
-    player->m_fireflyCount = 0;
+    Scene* scene = GameObject_GetScene((GameObject*)player);
+    player->m_lifeCount--;
+    /*if (player->m_lifeCount <= 0)
+    {
+
+    }*/
     Scene_Respawn(scene);
 }
 
@@ -279,7 +311,7 @@ static bool Player_WakeUpCallback(PE_Collider *collider, void *data)
 
 void Player_WakeUpSurroundings(Player *player)
 {
-    // Fonction utilisée pour réveiller les corps autour du joueur.
+    // Fonction utilisÃ©e pour rÃ©veiller les corps autour du joueur.
     // Cela permet d'optimiser le jeu pour ne simuler que les corps
     // proche du joueur.
     PE_Body *body = GameBody_GetBody((GameBody *)player);
@@ -308,7 +340,7 @@ void Player_VM_FixedUpdate(void *self)
     PE_Vec2 velocity = PE_Body_GetLocalVelocity(body);
     PE_Vec2 position = PE_Body_GetPosition(body);
 
-    // Réveille les corps autour du joueur
+    // RÃ©veille les corps autour du joueur
     Player_WakeUpSurroundings(player);
 
     // Tue le joueur s'il tombe dans un trou
@@ -317,21 +349,26 @@ void Player_VM_FixedUpdate(void *self)
         Player_Kill(player);
         return;
     }
-
+    if (player->m_state == PLAYER_DYING)
+    {
+        RE_Animator_StopAnimations(player->m_animator);
+        RE_Animator_PlayAnimation(player->m_animator, "Dying");
+        return;
+    }
     //--------------------------------------------------------------------------
-    // Détection du sol
+    // DÃ©tection du sol
 
     bool onGround = false;
     PE_Vec2 gndNormal = PE_Vec2_Up;
 
     // Lance deux rayons vers le bas ayant pour origines
     // les coins gauche et droit du bas du collider du joueur
-    // Ces deux rayons sont dessinés en jaune dans DrawGizmos()
+    // Ces deux rayons sont dessinÃ©s en jaune dans DrawGizmos()
     PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.35f, 0.0f));
     PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.35f, 0.0f));
 
     // Les rayons ne touchent que des colliders solides (non trigger)
-    // ayant la catégorie FILTER_TERRAIN
+    // ayant la catÃ©gorie FILTER_TERRAIN
     PE_RayCastHit hitL = PE_World_RayCast(
         world, originL, PE_Vec2_Down, 0.1f, FILTER_TERRAIN, true
     );
@@ -341,13 +378,13 @@ void Player_VM_FixedUpdate(void *self)
 
     if (hitL.collider != NULL)
     {
-        // Le rayon gauche à touché le sol
+        // Le rayon gauche Ã  touchÃ© le sol
         onGround = true;
         gndNormal = hitL.normal;
     }
     if (hitR.collider != NULL)
     {
-        // Le rayon droit à touché le sol
+        // Le rayon droit Ã  touchÃ© le sol
         onGround = true;
         gndNormal = hitR.normal;
     }
@@ -355,7 +392,7 @@ void Player_VM_FixedUpdate(void *self)
     //--------------------------------------------------------------------------
     // Etat du joueur
 
-    // Détermine l'état du joueur et change l'animation si nécessaire
+    // DÃ©termine l'Ã©tat du joueur et change l'animation si nÃ©cessaire
     if (onGround)
     {
         if (velocity.x != 0.0f) {
@@ -374,13 +411,6 @@ void Player_VM_FixedUpdate(void *self)
 			player->m_state = PLAYER_IDLE;
 			RE_Animator_PlayAnimation(player->m_animator, "Idle");
 		}
-        /*
-        else if (player->m_state != PLAYER_DYING)
-        {
-            player->m_state = PLAYER_DYING;
-            RE_Animator_PlayAnimation(player->m_animator, "Dying");
-        }
-        */
     }
     else
     {
@@ -389,13 +419,14 @@ void Player_VM_FixedUpdate(void *self)
             player->m_state = PLAYER_FALLING;
             RE_Animator_PlayAnimation(player->m_animator, "Falling");
         }
+        RE_Animator_PlayAnimation(player->m_animator, "Landing Down");
     }
 
     // Orientation du joueur
     // Utilisez player->m_hDirection qui vaut :
-    // *  0.0f si le joueur n'accélère pas ;
-    // * +1.0f si le joueur accélère vers la droite ;
-    // * -1.0f si le joueur accélère vers la gauche.
+    // *  0.0f si le joueur n'accÃ©lÃ¨re pas ;
+    // * +1.0f si le joueur accÃ©lÃ¨re vers la droite ;
+    // * -1.0f si le joueur accÃ©lÃ¨re vers la gauche.
     player->m_facingRight = true;
 
     // s'orriende la direction gauche quand on touche a fleche
@@ -407,7 +438,7 @@ void Player_VM_FixedUpdate(void *self)
     // Modification de la vitesse et application des forces
 
     // Application des forces
-    // Définit la force d'accélération horizontale du joueur
+    // DÃ©finit la force d'accÃ©lÃ©ration horizontale du joueur
     PE_Vec2 force = PE_Vec2_Scale(PE_Vec2_Right, 15.0f * player->m_hDirection);
     PE_Body_ApplyForce(body, force);
 
@@ -422,9 +453,10 @@ void Player_VM_FixedUpdate(void *self)
 	
     if (!onGround ) {
         player->m_JumpTime += RE_Timer_GetUnscaledDelta(g_time);
-        if (player->m_JumpNumber < 1) {
+        if (player->m_JumpNumber > 2) {
             if (player->m_jump) {
                 velocity.y = 15.0f;
+                RE_Animator_PlayAnimation(player->m_animator, "Landing Up");
                 player->m_jump = false;
             }
 		}
@@ -434,17 +466,19 @@ void Player_VM_FixedUpdate(void *self)
 		player->m_JumpNumber = 0;
         if (player->m_JumpTime < MaxTimeFlyInput && player-> m_jump) {
             velocity.y = 15.0f;
+            RE_Animator_PlayAnimation(player->m_animator, "Landing Up");
 			player->m_JumpNumber++;
 			player->m_JumpTime = 0.0f;
         }
         if (player->m_jump) {
             velocity.y = 15.0f;
+            RE_Animator_PlayAnimation(player->m_animator, "Landing Up");
             player->m_JumpNumber++;
             player->m_jump = false;
         }
     }
 
-	// saut modéré
+	// saut modÃ©rÃ©
     if (controls->jumpDown ) {
         PE_Body_SetGravityScale(body, 0.6f);
     }
@@ -456,14 +490,15 @@ void Player_VM_FixedUpdate(void *self)
     if (player->m_bounce)
     {
         velocity.y = 15.0f;
+        RE_Animator_PlayAnimation(player->m_animator, "Landing Up");
         player->m_bounce = false;
     }
 
     // Remarques :
-    // Le facteur de gravité peut être modifié avec l'instruction
+    // Le facteur de gravitÃ© peut Ãªtre modifiÃ© avec l'instruction
     // -> PE_Body_SetGravityScale(body, 1.0f);
-    // pour faire des sauts de hauteurs différentes.
-    // La physique peut être différente si le joueur touche ou non le sol.
+    // pour faire des sauts de hauteurs diffÃ©rentes.
+    // La physique peut Ãªtre diffÃ©rente si le joueur touche ou non le sol.
 
     PE_Body_SetVelocity(body, velocity);
 }
@@ -475,7 +510,7 @@ void Player_VM_OnRespawn(void *self)
     Scene *scene = GameObject_GetScene(self);
 
     AssertNew(body);
-    PE_Body_SetPosition(body, GameBody_GetStartPosition(player));
+    PE_Body_SetPosition(body, LevelScene_GetStartPosition(scene));
     PE_Body_SetVelocity(body, PE_Vec2_Zero);
 
     player->m_heartCount = 2;
@@ -520,7 +555,7 @@ void Player_VM_Destructor(void *self)
 
     RE_Animator_Delete(player->m_animator);
 
-    // Destructeur de la classe mère
+    // Destructeur de la classe mÃ¨re
     Object_SuperDestroy(self, Class_Player);
 }
 
@@ -538,7 +573,7 @@ void Player_VM_DrawGizmos(void *self)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     Renderer_DrawVector(renderer, camera, position, velocity);
 
-    // Dessine en jaune les rayons pour la détection du sol
+    // Dessine en jaune les rayons pour la dÃ©tection du sol
     PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.35f, 0.0f));
     PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.35f, 0.0f));
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
@@ -553,10 +588,10 @@ void Player_VM_Update(void *self)
     InputManager *inputManager = Scene_GetInputManager(scene);
     ControlsInput *controls = InputManager_GetControls(inputManager);
 
-    // Met à jour les animations du joueur
+    // Met Ã  jour les animations du joueur
     RE_Animator_Update(player->m_animator, g_time);
 
-    // Sauvegarde les contrôles du joueur pour modifier
+    // Sauvegarde les contrÃ´les du joueur pour modifier
     // sa physique au prochain FixedUpdate()
         if (controls->jumpPressed){
             player->m_jump = true;

@@ -67,6 +67,22 @@ void Nut_CreateAnimator(Nut *nut, void *scene)
     anim = RE_Animator_CreateTextureAnim(animator, "Idle", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
+
+    // Animation "Spinning"
+    RE_AtlasPart* partS = RE_Atlas_GetPart(atlas, "NutSpinning");
+    AssertNew(partS);
+
+    anim = RE_Animator_CreateTextureAnim(animator, "Spinning", partS);
+    AssertNew(anim);
+    RE_Animation_SetCycleCount(anim, 0);
+
+    // Animation "Dying"
+    RE_AtlasPart* partD = RE_Atlas_GetPart(atlas, "NutDying");
+    AssertNew(partD);
+
+    anim = RE_Animator_CreateTextureAnim(animator, "Dying", partD);
+    AssertNew(anim);
+    RE_Animation_SetCycleCount(anim, 0);
 }
 
 void Nut_Constructor(void *self, void *scene, PE_Vec2 startPos)
@@ -125,7 +141,7 @@ void Nut_VM_Start(void *self)
     PE_Body_SetAwake(body, false);
 
     // Joue l'animation par défaut
-    RE_Animator_PlayAnimation(nut->m_animator, "Idle");
+    RE_Animator_PlayAnimation(nut->m_animator, "Spinning");
 }
 
 void Nut_VM_Damage(void *self, void *damager)
@@ -133,12 +149,20 @@ void Nut_VM_Damage(void *self, void *damager)
     Nut *nut = Object_Cast(self, Class_Nut);
     Scene *scene = GameObject_GetScene(nut);
 
+    PE_Vec2 position = GameBody_GetPosition(nut);
+
     if (Object_IsA(damager, Class_Player))
     {
         Player_Bounce(damager);
     }
 
-    Scene_DisableObject(scene, nut);
+    nut->m_state = NUT_DYING;
+    RE_Animator_StopAnimations(nut->m_animator);
+    RE_Animator_PlayAnimation(nut->m_animator, "Dying");
+    if (position.y < -2.0f)
+    {
+        Scene_DisableObject(scene, nut);
+    }
 }
 
 void Nut_VM_Destructor(void *self)
@@ -169,6 +193,11 @@ void Nut_OnCollisionStay(PE_Collision *collision)
             Player_Damage(player);
         }
         return;
+    }
+
+    if (nut->m_state == NUT_DYING)
+    {
+        PE_Collision_SetEnabled(collision, false);
     }
 }
 

@@ -36,6 +36,35 @@ void Class_InitCheckpoint()
     }
 }
 
+void Checkpoint_CreateAnimator(Checkpoint* checkpoint, void* scene)
+{
+    RE_Animator* animator = RE_Animator_New();
+    AssertNew(animator);
+
+    AssetManager* assets = Scene_GetAssetManager(scene);
+    RE_Atlas* atlas = AssetManager_GetTerrainAtlas(assets);
+    RE_AtlasPart* part = NULL;
+    void* anim = NULL;
+
+    // Animation "CheckpointEmpty"
+    part = RE_Atlas_GetPart(atlas, "CheckpointEmpty");
+    AssertNew(part);
+
+    anim = RE_Animator_CreateTextureAnim(animator, "CheckpointEmpty", part);
+    AssertNew(anim);
+    RE_Animation_SetCycleCount(anim, 0);
+
+	// Animation "CheckpointFull"
+	part = RE_Atlas_GetPart(atlas, "CheckpointFull");
+	AssertNew(part);
+	
+	anim = RE_Animator_CreateTextureAnim(animator, "CheckpointFull", part);
+	AssertNew(anim);
+	RE_Animation_SetCycleCount(anim, 0);
+
+    checkpoint->m_animator = animator;
+}
+
 void Checkpoint_Constructor(void *self, void *scene, PE_Vec2 position)
 {
     GameBody_Constructor(self, scene, LAYER_TERRAIN);
@@ -43,13 +72,45 @@ void Checkpoint_Constructor(void *self, void *scene, PE_Vec2 position)
 
     Checkpoint *checkpoint = Object_Cast(self, Class_Checkpoint);
     checkpoint->m_isActive = false;
-    checkpoint->m_animator = NULL;
+    
 
     GameBody_SaveStartPosition(checkpoint, position);
+    Checkpoint_CreateAnimator(checkpoint, scene);
 }
 
 void Checkpoint_VM_Start(void *self)
 {
+    Checkpoint* checkpoint = Object_Cast(self, Class_Checkpoint);
+    Scene* scene = GameObject_GetScene(self);
+    PE_World* world = Scene_GetWorld(scene);
+    PE_Body* body = NULL;
+    PE_BodyDef bodyDef = { 0 };
+    PE_ColliderDef colliderDef = { 0 };
+    PE_Collider* collider = NULL;
+
+    // Crée le corps
+    PE_BodyDef_SetDefault(&bodyDef);
+    bodyDef.type = PE_STATIC_BODY;
+    bodyDef.position = GameBody_GetStartPosition(checkpoint);
+    bodyDef.name = "Checkpoint";
+
+    body = PE_World_CreateBody(world, &bodyDef);
+    AssertNew(body);
+
+    PE_ColliderDef_SetDefault(&colliderDef);
+    colliderDef.filter.categoryBits = FILTER_TERRAIN;
+    colliderDef.isTrigger = true;
+    PE_Shape_SetAsBox(&colliderDef.shape, -0.4f, 0.0f, 0.4f, 1.9f);
+
+    collider = PE_Body_CreateCollider(body, &colliderDef);
+    AssertNew(collider);
+
+    PE_Collider_SetOnCollisionEnter(collider, Checkpoint_OnCollisionEnter);
+
+    GameBody_SetBody(self, body);
+
+    // Joue l'animation par défaut
+    RE_Animator_PlayAnimation(checkpoint->m_animator, "CheckpointEmpty");
 }
 
 void Checkpoint_VM_Destructor(void *self)
@@ -64,12 +125,40 @@ void Checkpoint_VM_Destructor(void *self)
 
 void Checkpoint_OnCollisionEnter(PE_Collision *collision)
 {
+    PE_Body* thisBody = PE_Collision_GetBody(collision);
+    PE_Collider* otherCollider = PE_Collision_GetOtherCollider(collision);
+    Checkpoint* checkpoint = (Checkpoint*)GameBody_GetFromBody(thisBody);
+
+    if (PE_Collider_CheckCategory(otherCollider, FILTER_PLAYER) && !checkpoint->m_isActive)
+	{
+        LevelScene* scene = Object_Cast(GameObject_GetScene(checkpoint), Class_LevelScene);
+		checkpoint->m_isActive = true;
+		RE_Animator_PlayAnimation(checkpoint->m_animator, "CheckpointFull");
+		LevelScene_SetStartPosition(scene, thisBody->m_position);
+	}
 }
 
 void Checkpoint_VM_Render(void *self)
 {
+    Checkpoint* checkpoint = Object_Cast(self, Class_Checkpoint);
+    Scene* scene = GameObject_GetScene(self);
+    SDL_Renderer* renderer = Scene_GetRenderer(scene);
+    Camera* camera = Scene_GetActiveCamera(scene);
+    PE_Vec2 position = GameBody_GetPosition(checkpoint);
+
+    SDL_FRect dst = { 0 };
+    Camera_WorldToView(camera, position, &(dst.x), &(dst.y));
+    float scale = Camera_GetWorldToViewScale(camera);
+    dst.w = 2.0f * scale;
+    dst.h = 2.0f * scale;
+
+    RE_Animator_RenderCopyF(
+        checkpoint->m_animator, renderer, &dst, RE_ANCHOR_CENTER | RE_ANCHOR_BOTTOM
+    );
 }
 
 void Checkpoint_VM_Update(void *self)
 {
+    Checkpoint* checkpoint = Object_Cast(self, Class_Checkpoint);
+    RE_Animator_Update(checkpoint->m_animator, g_time);
 }

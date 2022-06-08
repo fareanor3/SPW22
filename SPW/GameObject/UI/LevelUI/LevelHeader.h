@@ -23,6 +23,7 @@ typedef struct LevelHeader_s
 
     Text *m_fireflyCountText;
     Text* m_heartCountText;
+    Text* m_lifeCountText;
 
 } LevelHeader;
 
