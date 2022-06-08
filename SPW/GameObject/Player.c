@@ -90,7 +90,13 @@ void Player_OnCollisionStay(PE_Collision *collision)
     PE_Body *otherBody = PE_Collision_GetOtherBody(collision);
     PE_Collider *otherCollider = PE_Collision_GetOtherCollider(collision);
     Player *player = (Player *)GameBody_GetFromBody(thisBody);
-
+	
+    if (player->m_state == PLAYER_DYING)
+    {
+        PE_Collision_SetEnabled(collision, false);
+        return;
+    }
+	
     if (PE_Collider_CheckCategory(otherCollider, FILTER_COLLECTABLE))
     {
         // Désactive la collision avec un objet
@@ -156,6 +162,14 @@ void Player_CreateAnimator(Player *player, void *scene)
     AssertNew(part);
 
     anim = RE_Animator_CreateTextureAnim(animator, "Skidding", part);
+    AssertNew(anim);
+    RE_Animation_SetCycleCount(anim, 0);
+	
+    // Animation "Dying"
+    part = RE_Atlas_GetPart(atlas, "Dying");
+    AssertNew(part);
+
+    anim = RE_Animator_CreateTextureAnim(animator, "Dying", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
 
@@ -247,18 +261,21 @@ void Player_VM_Start(void *self)
     RE_Animator_PlayAnimation(player->m_animator, "Idle");
 }
 
-void Player_Damage(Player *player)
+void Player_Damage(Player* player)
 {
     // Méthode appellée par un ennemi qui touche le joueur
     player->m_heartCount--;
-    if ((player->m_heartCount) <= 0)
-        Player_Kill(player);
+    if (player->m_heartCount <= 0)
+    {
+        player->m_state = PLAYER_DYING;
+    }
+    return;
 }
 
-void Player_Kill(Player *player)
+void Player_Kill(Player* player)
 {
-    Scene *scene = GameObject_GetScene((GameObject *)player);
-    player->m_fireflyCount = 0;
+    Scene* scene = GameObject_GetScene((GameObject*)player);
+    player->m_lifeCount--;
     Scene_Respawn(scene);
 }
 
@@ -328,7 +345,12 @@ void Player_VM_FixedUpdate(void *self)
         Player_Kill(player);
         return;
     }
-
+    if (player->m_state == PLAYER_DYING)
+    {
+        RE_Animator_StopAnimations(player->m_animator);
+        RE_Animator_PlayAnimation(player->m_animator, "Dying");
+        return;
+    }
     //--------------------------------------------------------------------------
     // Détection du sol
 
