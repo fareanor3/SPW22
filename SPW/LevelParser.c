@@ -229,6 +229,13 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
                 Nut_Constructor(nut, scene, PE_Vec2_Set((float)x + 0.5f, (float)y));
                 break;
             }
+            case 'C': 
+            {
+                Checkpoint* checkpoint = Scene_AllocateObject(scene, Class_Checkpoint);
+                AssertNew(checkpoint);
+                Checkpoint_Constructor(checkpoint, scene, PE_Vec2_Set((float)x, (float)y));
+                break;
+            }
             default:
                 break;
             }
