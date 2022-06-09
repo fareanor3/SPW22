@@ -59,7 +59,7 @@ void LevelHeader_Constructor(void *self, void *scene)
     rect.m_offsetMax = Vec2_Set(80.0f + panelW, 40.0f + panelH);
     UIObject_SetLocalRect(panel, rect);
 
-    // Image du nombre de luciolles
+    // Image du nombre de luciolles, coeurs et vies que possède le joueur
     RE_Atlas *uiAtlas = AssetManager_GetUIAtlas(assets);
     RE_AtlasPart *part = RE_Atlas_GetPart(uiAtlas, "Firefly");
     RE_AtlasPart* Hpart = RE_Atlas_GetPart(uiAtlas, "Heart");
@@ -163,7 +163,6 @@ void LevelHeader_VM_Update(void *self)
     count = Player_GetFireflyCount(player);
     sprintf(str, "%d", count);
     Text_SetString(panel->m_fireflyCountText, str);
-
 
     countH = Player_GetHeartCount(player);
     sprintf(strH, "%d", countH);
