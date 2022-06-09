@@ -276,10 +276,10 @@ void Player_Kill(Player* player)
 {
     Scene* scene = GameObject_GetScene((GameObject*)player);
     player->m_lifeCount--;
-    /*if (player->m_lifeCount <= 0)
+    if (player->m_lifeCount <= 0)
     {
-
-    }*/
+        Scene_Quit(scene);
+    }
     Scene_Respawn(scene);
 }
 

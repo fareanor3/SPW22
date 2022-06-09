@@ -66,14 +66,14 @@ void LevelHeader_Constructor(void *self, void *scene)
     RE_AtlasPart* Lpart = RE_Atlas_GetPart(uiAtlas, "Life");
     AssertNew(part);
     AssertNew(Hpart);
-    AssertNew(Lpart);
+	AssertNew(Lpart);
 
     Image *fireflyImg = Scene_AllocateObject(scene, Class_Image);
     AssertNew(fireflyImg);
     Image* heartImg = Scene_AllocateObject(scene, Class_Image);
     AssertNew(heartImg);
-    Image* lifeImg = Scene_AllocateObject(scene, Class_Image);
-    AssertNew(lifeImg);
+	Image* lifeImg = Scene_AllocateObject(scene, Class_Image);
+	AssertNew(lifeImg);
 
     Image_Constructor(fireflyImg, scene, part, 0);
     rect.m_anchorMin = Vec2_Set(0.0f, 0.0f);
@@ -124,7 +124,7 @@ void LevelHeader_Constructor(void *self, void *scene)
     UIObject_SetLocalRect(heartCountText, rect);
     GameObject_SetParent(heartCountText, panel);
     panel->m_heartCountText = heartCountText;
-
+	
     //compteur du nombre de vies du joueur
     Text* lifeCountText = Scene_AllocateObject(scene, Class_Text);
     AssertNew(lifeCountText);
@@ -167,7 +167,6 @@ void LevelHeader_VM_Update(void *self)
     countH = Player_GetHeartCount(player);
     sprintf(strH, "%d", countH);
     Text_SetString(panel->m_heartCountText, strH);
-
     countL = Player_GetLifeCount(player);
     sprintf(strL, "%d", countL);
     Text_SetString(panel->m_lifeCountText, strL);
