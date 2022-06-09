@@ -244,6 +244,7 @@ void Nut_VM_FixedUpdate(void *self)
 
     // Calcule la distance entre le joueur et la noisette
     float dist = PE_Vec2_Distance(position, playerPos);
+	float direction = (position.x - playerPos.x);
 
     if (dist > 24.0f)
     {
@@ -255,8 +256,14 @@ void Nut_VM_FixedUpdate(void *self)
     else if (dist <= 5.0f && nut->m_state == NUT_IDLE)
     {
         // Le joueur est à moins de 5 tuiles de la noisette
-        nut->m_state = NUT_SPINNING;
+        nut->m_state = NUT_SPINNING; 
         velocity = PE_Vec2_Set(-3.f, 10.f);
+        if (direction >= 0.0f){
+            velocity.x = -15.0f;
+        }
+        else if (direction < 0.0f){
+            velocity.x = 10.f;
+        }
     }
 
     PE_Body_SetVelocity(body, velocity);
