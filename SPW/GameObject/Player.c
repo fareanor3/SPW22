@@ -258,9 +258,11 @@ void Player_VM_Start(void *self)
     PE_ColliderDef_SetDefault(&colliderDef);
     colliderDef.friction = 1.0f;
     colliderDef.filter.categoryBits = FILTER_PLAYER;
-    PE_Shape_SetAsBox(
+    PE_Shape_SetAsCapsule(
         &colliderDef.shape,
-        -0.35f, 0.0f, 0.35f, 1.25f
+        PE_Vec2_Set(0.0f, 0.25),
+        PE_Vec2_Set(0.0f, 0.9f),
+        0.3f
     );
 
     collider = PE_Body_CreateCollider(body, &colliderDef);
@@ -313,7 +315,10 @@ void Player_SubFirefly(void* self)
 void Player_AddHeart(void *self)
 {
     Player *player = Object_Cast(self, Class_Player);
-    player->m_heartCount++;
+    if (player->m_heartCount < 2)
+	{
+		player->m_heartCount++;
+	}
 }
 
 static bool Player_WakeUpCallback(PE_Collider *collider, void *data)
@@ -379,8 +384,8 @@ void Player_VM_FixedUpdate(void *self)
     // Lance deux rayons vers le bas ayant pour origines
     // les coins gauche et droit du bas du collider du joueur
     // Ces deux rayons sont dessinés en jaune dans DrawGizmos()
-    PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.35f, 0.0f));
-    PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.35f, 0.0f));
+    PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.15f, 0.0f));
+    PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.15f, 0.0f));
 
     // Les rayons ne touchent que des colliders solides (non trigger)
     // ayant la catégorie FILTER_TERRAIN
@@ -488,10 +493,10 @@ void Player_VM_FixedUpdate(void *self)
         if (player->m_jump) {
             velocity.y = 15.0f;
             RE_Animator_PlayAnimation(player->m_animator, "Landing Up");
-            player->m_JumpNumber++;
-            player->m_jump = false;
+            player->m_JumpNumber++;    
         }
     }
+    player->m_jump = false;
 
 	// saut modéré
     if (controls->jumpDown ) {
@@ -590,8 +595,8 @@ void Player_VM_DrawGizmos(void *self)
     Renderer_DrawVector(renderer, camera, position, velocity);
 
     // Dessine en jaune les rayons pour la détection du sol
-    PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.35f, 0.0f));
-    PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.35f, 0.0f));
+    PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.15f, 0.0f));
+    PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.15f, 0.0f));
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
     Renderer_DrawVector(renderer, camera, originL, PE_Vec2_Set(0.0f, -0.1f));
     Renderer_DrawVector(renderer, camera, originR, PE_Vec2_Set(0.0f, -0.1f));

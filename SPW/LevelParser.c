@@ -5,6 +5,7 @@
 
 #include "GameObject/Player.h"
 #include "GameObject/Collectable/Firefly.h"
+#include "GameObject/Collectable/Heart.h"
 #include "GameObject/Enemy/Nut.h"
 #include "GameObject/Enemy/AngryNut.h"
 #include "GameObject/Terrain/Brick.h"
@@ -202,6 +203,25 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
             case 'A':
                 StaticMap_SetTile(map, x, y, TILE_SPIKE);
                 break;
+			case '/':
+				StaticMap_SetTile(map, x, y, TILE_STEEP_SLOPE_L);
+                break;
+            case '\\':
+				StaticMap_SetTile(map, x, y, TILE_STEEP_SLOPE_R);
+				break;
+            case 'l':
+				StaticMap_SetTile(map, x, y, TILE_GENTLE_SLOPE_L1);
+				break;
+			case 'L':
+				StaticMap_SetTile(map, x, y, TILE_GENTLE_SLOPE_L2);
+				break;
+			case 'r':
+				StaticMap_SetTile(map, x, y, TILE_GENTLE_SLOPE_R1);
+				break;
+			case 'R':
+				StaticMap_SetTile(map, x, y, TILE_GENTLE_SLOPE_R2);
+				break;
+				
             case 'S':
                 if (Object_IsA(scene, Class_LevelScene))
                 {
@@ -249,6 +269,13 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
                 Brick* brick = Scene_AllocateObject(scene, Class_Brick);
                 AssertNew(brick);
                 Brick_Constructor(brick, scene, PE_Vec2_Set((float)x, (float)y));
+                break;
+            }
+			case '+':
+            {
+                Heart* heart = Scene_AllocateObject(scene, Class_Heart);
+                AssertNew(heart);
+                Heart_Constructor(heart, scene, PE_Vec2_Set((float)x, (float)y));
                 break;
             }
             default:

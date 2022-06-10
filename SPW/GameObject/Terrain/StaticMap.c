@@ -138,7 +138,7 @@ void StaticMap_VM_Start(void *self)
     Tile **tiles = map->m_tiles;
     int width = map->m_width;
     int height = map->m_height;
-    PE_Vec2 vertices[3] = { 0 };
+    PE_Vec2 vertices[4] = { 0 };
 
     for (int x = 0; x < width; ++x)
     {
@@ -182,6 +182,62 @@ void StaticMap_VM_Start(void *self)
                 PE_Shape_SetAsPolygon(
                     &colliderDef.shape, vertices, 3);
                 break;
+				
+            case TILE_GENTLE_SLOPE_L1:
+				vertices[0] = PE_Vec2_Set((float)x, (float)y);
+				vertices[1] = PE_Vec2_Set((float)x +1.0f, (float)y);
+				vertices[2] = PE_Vec2_Set((float)x +1.0f, (float)y + 0.5f);
+				
+                PE_Shape_SetAsPolygon(
+                    &colliderDef.shape, vertices, 3);
+                break;
+				
+            case TILE_GENTLE_SLOPE_L2:
+                vertices[0] = PE_Vec2_Set((float)x, (float)y);
+				vertices[1] = PE_Vec2_Set((float)x+1.0f, (float)y);
+				vertices[2] = PE_Vec2_Set((float)x+1.0f, (float)y+1.0f);
+				vertices[3] = PE_Vec2_Set((float)x, (float)y+0.5f);
+				
+                PE_Shape_SetAsPolygon(
+                    &colliderDef.shape, vertices, 4);
+                break;
+				
+            case TILE_GENTLE_SLOPE_R1:
+				vertices[0] = PE_Vec2_Set((float)x, (float)y);
+				vertices[1] = PE_Vec2_Set((float)x+1.0f, (float)y);
+				vertices[2] = PE_Vec2_Set((float)x, (float)y+0.5f);
+				
+                PE_Shape_SetAsPolygon(
+                    &colliderDef.shape, vertices, 3);
+                break;
+				
+            case TILE_GENTLE_SLOPE_R2:
+				vertices[0] = PE_Vec2_Set((float)x, (float)y);
+				vertices[1] = PE_Vec2_Set((float)x+1.0f, (float)y);
+				vertices[2] = PE_Vec2_Set((float)x+1.0f, (float)y+0.5f);
+				vertices[3] = PE_Vec2_Set((float)x, (float)y+1.0f);
+				
+                PE_Shape_SetAsPolygon(
+                    &colliderDef.shape, vertices, 4);
+                break;
+				
+            case TILE_STEEP_SLOPE_L:
+				vertices[0] = PE_Vec2_Set((float)x, (float)y);
+				vertices[1] = PE_Vec2_Set((float)x +1.0f, (float)y);
+				vertices[2] = PE_Vec2_Set((float)x +1.0f, (float)y + 1.0f);
+				
+                PE_Shape_SetAsPolygon(
+                    &colliderDef.shape, vertices, 3);
+                break;
+				
+            case TILE_STEEP_SLOPE_R:
+				vertices[0] = PE_Vec2_Set((float)x, (float)y);
+				vertices[1] = PE_Vec2_Set((float)x +1.0f, (float)y);
+				vertices[2] = PE_Vec2_Set((float)x, (float)y + 1.0f);
+				
+				PE_Shape_SetAsPolygon(
+					&colliderDef.shape, vertices, 3);
+				break;
 
             default:
                 newCollider = false;
@@ -279,25 +335,58 @@ void StaticMap_InitTiles(void *self)
             {
                 if (StaticMap_IsGround(map, x, y + 1) == false)
                 {
-                    if (StaticMap_IsGround(map, x-1, y) == false)
+                    if (StaticMap_IsGround(map, x - 1, y) == false)
                         tiles[x][y].m_partIdx = 0;
-                    else if (StaticMap_IsGround(map, x+1, y) == false)
-						tiles[x][y].m_partIdx = 2;
-					else
-						tiles[x][y].m_partIdx = 1;	
+                    else if (StaticMap_IsGround(map, x + 1, y) == false)
+                        tiles[x][y].m_partIdx = 2;
+                    else
+                        tiles[x][y].m_partIdx = 1;
                 }
-                else{
-					if (StaticMap_IsGround(map, x-1, y) == false)
-						tiles[x][y].m_partIdx = 3;
-					else if (StaticMap_IsGround(map, x+1, y) == false)
-						tiles[x][y].m_partIdx = 5;
-                    else if (StaticMap_IsGround(map, x-1, y+1) == false)
-						tiles[x][y].m_partIdx = 6;
-                    else if (StaticMap_IsGround(map, x+1, y+1) == false)
+                else {
+                    if (StaticMap_IsGround(map, x - 1, y) == false)
+                        tiles[x][y].m_partIdx = 3;
+                    else if (StaticMap_IsGround(map, x + 1, y) == false)
+                        tiles[x][y].m_partIdx = 5;
+                    else if (StaticMap_IsGround(map, x - 1, y + 1) == false)
+                        tiles[x][y].m_partIdx = 6;
+                    else if (StaticMap_IsGround(map, x + 1, y + 1) == false)
                         tiles[x][y].m_partIdx = 7;
-					else
-						tiles[x][y].m_partIdx = 4;
+                    else
+                        tiles[x][y].m_partIdx = 4;
                 }
+				
+            }
+            else if (StaticMap_GetTileType(map, x, y) == TILE_GENTLE_SLOPE_L1)
+            {
+                tiles[x][y].m_partIdx = 15;
+				if (StaticMap_IsGround(map, x, y - 1) == true) 
+					tiles[x][y-1].m_partIdx = 17;
+            }
+            else if (StaticMap_GetTileType(map, x, y) == TILE_GENTLE_SLOPE_L2)
+            {
+                tiles[x][y].m_partIdx = 16;
+            }
+            else if (StaticMap_GetTileType(map, x, y) == TILE_GENTLE_SLOPE_R1)
+            {
+                tiles[x][y].m_partIdx = 13;
+                if (StaticMap_IsGround(map, x, y - 1) == true)
+                    tiles[x][y-1].m_partIdx = 14;
+            }
+            else if (StaticMap_GetTileType(map, x, y) == TILE_GENTLE_SLOPE_R2)
+            {
+                tiles[x][y].m_partIdx = 12;
+            }
+            else if (StaticMap_GetTileType(map, x, y) == TILE_STEEP_SLOPE_L)
+            {
+                tiles[x][y].m_partIdx = 10;
+                if (StaticMap_IsGround(map, x, y - 1) == true)
+                    tiles[x][y-1].m_partIdx = 11;
+            }
+            else if (StaticMap_GetTileType(map, x, y) == TILE_STEEP_SLOPE_R)
+            {
+                tiles[x][y].m_partIdx = 9;
+                if (StaticMap_IsGround(map, x, y - 1) == true)
+                    tiles[x][y-1].m_partIdx = 8;
             }
         }
     }

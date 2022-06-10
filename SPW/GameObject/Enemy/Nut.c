@@ -275,10 +275,8 @@ void Nut_VM_FixedUpdate(void *self)
         }
         else if (direction < 0.0f){
             velocity.x = 10.f;
-        }   
+        }
     }
-    velocity.x = nut->m_speed;
-    
 
     PE_Body_SetVelocity(body, velocity);
 }
