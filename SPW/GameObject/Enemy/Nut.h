@@ -26,9 +26,9 @@ typedef struct Nut_s
     } m_super;
 
     RE_Animator *m_animator;
-
+	
     int m_state;
-
+    float m_speed;
 } Nut;
 
 void Nut_Constructor(void *self, void *scene, PE_Vec2 startPos);

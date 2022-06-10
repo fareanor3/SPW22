@@ -9,7 +9,7 @@ void Bonus_VM_Destructor(void *self);
 void Bonus_VM_Render(void *self);
 void Bonus_VM_Start(void *self);
 void Bonus_VM_Update(void *self);
-void Bouns_VM_OnRespawn(void *self);
+void Bonus_VM_OnRespawn(void *self);
 
 // Collisions callbacks
 void Bonus_OnCollisionEnter(PE_Collision* collision);
@@ -32,7 +32,7 @@ void Class_InitBonus()
             .classSize = sizeof(BonusClass)
         };
         Class_Constructor(params, Bonus_VM_Destructor);
-        ((GameObjectClass *)self)->OnRespawn = Bouns_VM_OnRespawn;
+        ((GameObjectClass *)self)->OnRespawn = Bonus_VM_OnRespawn;
         ((GameObjectClass *)self)->Render = Bonus_VM_Render;
         ((GameObjectClass *)self)->Start = Bonus_VM_Start;
         ((GameObjectClass *)self)->Update = Bonus_VM_Update;
@@ -49,15 +49,22 @@ void Bonus_CreateAnimator(Bonus* bonus, void* scene)
     RE_AtlasPart* part = NULL;
     void* anim = NULL;
 
-    // Animation "Bonus"
-    part = RE_Atlas_GetPart(atlas, "Bonus");
+    // Animation "BonusFull"
+    part = RE_Atlas_GetPart(atlas, "BonusFull");
     AssertNew(part);
 
-    anim = RE_Animator_CreateTextureAnim(animator, "Bonus", part);
+    anim = RE_Animator_CreateTextureAnim(animator, "BonusFull", part);
     AssertNew(anim);
     RE_Animation_SetCycleCount(anim, 0);
-
-    bonus->m_animator = animator;
+	
+	// Animation "BonusEmpty"
+	part = RE_Atlas_GetPart(atlas, "BonusEmpty");
+	AssertNew(part);
+	
+	anim = RE_Animator_CreateTextureAnim(animator, "BonusEmpty", part);
+	AssertNew(anim);
+	RE_Animation_SetCycleCount(anim, 0);
+	bonus->m_animator = animator;
 }
 
 void Bonus_Constructor(void *self, void *scene, PE_Vec2 position)
@@ -70,7 +77,8 @@ void Bonus_Constructor(void *self, void *scene, PE_Vec2 position)
     bonus->m_animator = NULL;
 
     GameBody_SaveStartPosition(bonus, PE_Vec2_Add(position, PE_Vec2_Set(0.5f, 0.0f)));
-    Brick_CreateAnimator(bonus, scene);
+    Bonus_CreateAnimator(bonus, scene);
+    RE_Animator_PlayAnimation(bonus->m_animator, "BonusFull");
 }
 
 void Bonus_VM_Start(void *self)
@@ -132,15 +140,22 @@ void Bonus_OnCollisionEnter(PE_Collision* collision)
         float angle = PE_Vec2_AngleDeg(manifold.normal, PE_Vec2_Up);
         if (angle == 0.0f)
         {
-            Scene_DisableObject(scene, bonus);
+            bonus->m_isEmpty = true;
+			RE_Animator_PlayAnimation(bonus->m_animator, "BonusEmpty");
             Scene_SetToRespawn(scene, bonus, true);
         }
     }
 }
 
-void Bouns_VM_OnRespawn(void *self)
+void Bonus_VM_OnRespawn(void *self)
 {
+    Bonus* bonus = Object_Cast(self, Class_Bonus);
+	Scene *scene = GameObject_GetScene(self);
 	
+    if (bonus->m_isEmpty= true){
+        bonus->m_isEmpty = false;
+    }
+	RE_Animator_PlayAnimation(bonus->m_animator, "BonusFull");
 }
 
 void Bonus_VM_Render(void *self)

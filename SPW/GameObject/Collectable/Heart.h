@@ -12,6 +12,13 @@ typedef struct HeartClass_s {
     const CollectableClass base;
 } HeartClass;
 
+typedef enum HeartState_e
+{
+    HEART_IDLE,
+    HEART_SPINNING,
+    HEART_DYING
+} HeartState;
+
 typedef struct Heart_s
 {
     struct {
@@ -19,6 +26,10 @@ typedef struct Heart_s
     } m_super;
 
     RE_Animator *m_animator;
+
+    int m_state;
+    float m_speed;
+	
 } Heart;
 
 void Heart_Constructor(void *self, void *scene, PE_Vec2 startPos);

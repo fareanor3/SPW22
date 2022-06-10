@@ -20,6 +20,7 @@ typedef struct Bonus_s
     } m_super;
 
     bool m_hit;
+    bool m_isEmpty;
     RE_Animator *m_animator;
 } Bonus;
 

@@ -22,6 +22,7 @@
 #      include "GameObject/Collectable/Heart.h"
 #    include "GameObject/Enemy/Enemy.h"
 #      include "GameObject/Enemy/Nut.h"
+#      include "GameObject/Enemy/AngryNut.h"
 #    include "GameObject/Player.h"
 #    include "GameObject/Terrain/StaticMap.h"
 #    include "GameObject/Terrain/Bonus.h"
@@ -56,7 +57,7 @@ const InitFct SPW_Initializers[] = {
     Class_InitStaticMap, Class_InitBonus, Class_InitBrick, Class_InitMovingPlatform,
     Class_InitCheckpoint, Class_InitLevelEnd,
     Class_InitCollectable, Class_InitFirefly, Class_InitHeart,
-    Class_InitEnemy, Class_InitNut,
+    Class_InitEnemy, Class_InitNut,Class_InitANut,
     Class_InitUIObject, Class_InitText, Class_InitButton, Class_InitImage,
     Class_InitLevelHeader, Class_InitSceneStatsUI, Class_InitPauseMenu, Class_InitPauseControls,
     Class_InitTitleCanvas, Class_InitStartScreen, Class_InitLevelSelection,

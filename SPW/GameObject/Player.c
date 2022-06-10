@@ -190,6 +190,12 @@ void Player_CreateAnimator(Player *player, void *scene)
 	RE_Animation_SetCycleCount(anim, 1);
 	RE_Animation_SetCycleTime(anim, 0.2f);
 	RE_Animation_AddFlags(anim, RE_ANIM_ALTERNATE);
+
+    // Animation "Invincible"
+    anim = RE_Animator_CreateAlphaAnim(animator, "Invincible", 0.3f, 2.0f);
+    AssertNew(anim);
+    RE_Animation_SetCycleCount(anim, 20);
+    RE_Animation_SetCycleTime(anim, 0.2f);
 }
 
 void Player_Constructor(void *self, void *scene)
@@ -271,6 +277,8 @@ void Player_Damage(Player* player)
     {
         player->m_state = PLAYER_DYING;
     }
+    player->unstoppable = true;
+    RE_Animator_PlayAnimation(player->m_animator, "Invincible");
     return;
 }
 
@@ -595,7 +603,16 @@ void Player_VM_Update(void *self)
 
     // Met à jour les animations du joueur
     RE_Animator_Update(player->m_animator, g_time);
-
+    if (player->unstoppable)
+    {
+        player->invincible_T += RE_Timer_GetUnscaledDelta(g_time);
+        if (player->invincible_T > 3.0f)
+        {
+            player->unstoppable = false;
+            player->invincible_T = 0;
+            RE_Animator_StopAnimation(player->m_animator, "Invincible");
+        }
+    }
     // Sauvegarde les contrôles du joueur pour modifier
     // sa physique au prochain FixedUpdate()
         if (controls->jumpPressed){

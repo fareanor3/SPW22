@@ -7,6 +7,7 @@
 #include "GameObject/Collectable/Firefly.h"
 #include "GameObject/Collectable/Heart.h"
 #include "GameObject/Enemy/Nut.h"
+#include "GameObject/Enemy/AngryNut.h"
 #include "GameObject/Terrain/Brick.h"
 #include "GameObject/Terrain/Bonus.h"
 #include "GameObject/Terrain/MovingPlatform.h"
@@ -16,7 +17,7 @@
 
 static char validChar[] = {
     '\n', '\\', '/', 'L', 'l', 'R', 'r' , '.', '#', '=',
-    'W', 'C', 'e', 'S', 'X', 'o', '?', 'F', '+', 'M', 'B', 'A'
+    'W', 'C', 'e', 'S', 'X', 'o', '?', 'F', '+', 'M', 'B', 'A','E'
 };
 
 LevelParser *LevelParser_New(char *path)
@@ -249,6 +250,13 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
                 Nut_Constructor(nut, scene, PE_Vec2_Set((float)x + 0.5f, (float)y));
                 break;
             }
+            case 'E':
+            {
+                ANut* AngryNut = Scene_AllocateObject(scene, Class_ANut);
+                AssertNew(AngryNut);
+                AngryNut_Constructor(AngryNut, scene, PE_Vec2_Set((float)x + 0.5f, (float)y));
+                break;
+            }
             case 'C': 
             {
                 Checkpoint* checkpoint = Scene_AllocateObject(scene, Class_Checkpoint);
@@ -270,6 +278,14 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
                 Heart_Constructor(heart, scene, PE_Vec2_Set((float)x, (float)y));
                 break;
             }
+			case '?':
+            {
+				Bonus* bonus = Scene_AllocateObject(scene, Class_Bonus);
+                AssertNew(bonus);
+				Bonus_Constructor(bonus, scene, PE_Vec2_Set((float)x, (float)y));
+				break;		
+            }
+			
             default:
                 break;
             }

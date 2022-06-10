@@ -243,6 +243,9 @@
     <ClCompile Include="GameObject\UI\Text.c">
       <Filter>Fichiers sources\GameObject\UI</Filter>
     </ClCompile>
+    <ClCompile Include="GameObject\Enemy\AngryNut.c">
+      <Filter>Fichiers sources\GameObject\Enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Settings.h">
@@ -397,6 +400,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\UI\Text.h">
       <Filter>Fichiers d%27en-tête\GameObject\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject\Enemy\AngryNut.h">
+      <Filter>Fichiers d%27en-tête\GameObject\Enemy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
