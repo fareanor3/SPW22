@@ -179,7 +179,7 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
     int width = parser->m_width;
     int height = parser->m_heigth;
 
-    // Crée la TileMap
+    // Crï¿½e la TileMap
     StaticMap *map = (StaticMap *)Scene_AllocateObject(scene, Class_StaticMap);
     AssertNew(map);
 

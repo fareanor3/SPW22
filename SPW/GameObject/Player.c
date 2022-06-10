@@ -53,6 +53,13 @@ void Player_OnCollisionEnter(PE_Collision *collision)
     Player *player = (Player *)GameBody_GetFromBody(thisBody);
     GameBody *otherGameBody = GameBody_GetFromBody(otherBody);
 
+
+    if (player->m_state == PLAYER_DYING)
+    {
+        PE_Collision_SetEnabled(collision, false);
+        return;
+    }
+
     // Collision avec un ennemi
     if (PE_Collider_CheckCategory(otherCollider, FILTER_ENEMY))
     {
@@ -529,6 +536,7 @@ void Player_VM_OnRespawn(void *self)
     player->m_heartCount = 2;
     player->m_state = PLAYER_IDLE;
     player->m_hDirection = 0.0f;
+    player->unstoppable = 0;
 
     player->m_facingRight = true;
     player->m_bounce = false;
@@ -600,7 +608,7 @@ void Player_VM_Update(void *self)
     Scene *scene = GameObject_GetScene(self);
     InputManager *inputManager = Scene_GetInputManager(scene);
     ControlsInput *controls = InputManager_GetControls(inputManager);
-
+    //octroi l'invicibilité au joueur
     // Met à jour les animations du joueur
     RE_Animator_Update(player->m_animator, g_time);
     if (player->unstoppable)
