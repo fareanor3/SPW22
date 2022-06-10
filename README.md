@@ -1,43 +1,50 @@
+[HomePage](https://github.com/fareanor3)
+
 # SPW_Basecode
+
+Practical work at the end of the second semester in the first year of engineering school. Work done in pairs during 4 consecutive days.
+
+**Note:**  A huge thank you to our teachers for all the work done
 
 ## Player
 
-> Saut et saut seullement sur le sol
-> Planne avec la touche maintenu
-> Nombre de vie
-> Nombre de coeur
-derapage
-gestion de la vie
-invulnérabilité 
-anniation correspondante à chaque etat
-gestion des vie a 100 lucioles
+Jump and jump alone on the ground
+Hover with the maintained key
+Number of life
+Number of heart
+skidding
+life management
+invulnerability 
+animation corresponding to each state
+management of the life to 100 fireflies
 
-## Mob 
+## Mob
 
+nut state
+bounce
+attack
 
-etat de la nut
-rebond
-attaque
+new mob : nut unhappy that jumps and attacks every two seconds
 
-nouveau mob : nut pas contante qui saute et qui attaque toute les deux secondes
+## Bonus
 
-## Bonus 
-
-coeur qui se deplace 
-sort du bloc 
-désactive l'etat du bloc
+heart that moves 
+goes out of the mistery block 
+deactivates the state of the block
 
 ## Terrain
 
-toutes les textures
-pentes ( sans physque )
-platformes toutes
+all textures
+slopes ( without physics )
+platforms all
 checkpoint
 brick
 
 ## menu
 
-Nouveau monde 
+New world 
 theme 
 level
-couleur quand réussi
+color level when successful
+
+[InGame](https://github.com/fareanor3)
