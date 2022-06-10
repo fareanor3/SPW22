@@ -292,6 +292,7 @@ void ANut_VM_FixedUpdate(void* self)
         velocity.y = 10.0f;
         AngryNut->onGround = false;
     }
+
     PE_Body_SetVelocity(body, velocity);
 }
 

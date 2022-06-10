@@ -201,7 +201,10 @@ void Heart_VM_OnRespawn(void* self)
 	
     Scene* scene = GameObject_GetScene(self);
 	
-
+    if (heart->m_bonus) {
+        Scene_DeleteObject(scene, heart);
+        return;
+    }
     Scene_SetToRespawn(scene, self, false);
 
     RE_Animator_StopAnimations(heart->m_animator);
@@ -243,7 +246,7 @@ void Heart_VM_Collect(void* self, void* dst)
     }
 
     // Indique qu'il faut regénérer l'objet si le joueur meurt
-    Scene_SetToRespawn(scene, self, true);
+	Scene_SetToRespawn(scene, self, true);
 
     // Désactive la luciolle
     Scene_DisableObject(scene, heart);

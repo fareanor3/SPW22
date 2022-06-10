@@ -384,8 +384,8 @@ void Player_VM_FixedUpdate(void *self)
     // Lance deux rayons vers le bas ayant pour origines
     // les coins gauche et droit du bas du collider du joueur
     // Ces deux rayons sont dessinés en jaune dans DrawGizmos()
-    PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.15f, 0.0f));
-    PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.15f, 0.0f));
+    PE_Vec2 originL = PE_Vec2_Add(position, PE_Vec2_Set(-0.10f, 0.0f));
+    PE_Vec2 originR = PE_Vec2_Add(position, PE_Vec2_Set(+0.10f, 0.0f));
 
     // Les rayons ne touchent que des colliders solides (non trigger)
     // ayant la catégorie FILTER_TERRAIN
@@ -523,6 +523,13 @@ void Player_VM_FixedUpdate(void *self)
     // -> PE_Body_SetGravityScale(body, 1.0f);
     // pour faire des sauts de hauteurs différentes.
     // La physique peut être différente si le joueur touche ou non le sol.
+	
+	// rajoue des vies en fon
+    if (player->m_fireflyCount > 99 && player->m_heartCount < 2)
+    {
+        Player_AddHeart(self);
+        player->m_fireflyCount -= 100;
+    }
 
     PE_Body_SetVelocity(body, velocity);
 }

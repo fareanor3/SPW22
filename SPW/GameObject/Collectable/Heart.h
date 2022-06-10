@@ -27,6 +27,7 @@ typedef struct Heart_s
 
     RE_Animator *m_animator;
 
+    bool m_bonus;
     int m_state;
     float m_speed;
 	

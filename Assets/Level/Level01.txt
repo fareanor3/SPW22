@@ -16,17 +16,20 @@
 LEGENDE :
   [.] = case vide
   [S] = point de départ du monde
-  [F] = Arrivee
+  [F] = Arrivee   
   [#] = sol
   [W] = bloc (buche de bois)
-  [=] = bloc one-way
+  [=] = bloc one-Way
   [o] = pièce (luciolle)
   [e] = ennemi (noisette magique)
+  [E] = ennemi (noisette quasi magique de l'enfert !)
   [A] = ennemi statique (pique)
   [C] = Checkpoint
   [B] = Brick
   [+] = Heart
   [?] = Bonus
-
+  [q] = platforme en hauteur
+  [p] = platforme en largeur
+  [P] = platforme en triangle rectangle
 
   

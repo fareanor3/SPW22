@@ -145,6 +145,7 @@ void Bonus_OnCollisionEnter(PE_Collision* collision)
 				bonus->m_hit = true;
 				RE_Animator_PlayAnimation(bonus->m_animator, "BonusEmpty");
                 Heart* heart = Scene_AllocateObject(scene, Class_Heart);
+                heart->m_bonus = true;
                 AssertNew(heart);
                 Heart_Constructor(heart, scene, PE_Vec2_Set((float)thisBody->m_position.x, (float)thisBody->m_position.y+1.0f));
                 Scene_SetToRespawn(scene, bonus, true);
@@ -185,6 +186,6 @@ void Bonus_VM_Render(void *self)
 
 void Bonus_VM_Update(void *self)
 {
-    Bonus* brick = Object_Cast(self, Class_Bonus);
-    RE_Animator_Update(brick->m_animator, g_time);
+    Bonus* bonus = Object_Cast(self, Class_Bonus);
+    RE_Animator_Update(bonus->m_animator, g_time);
 }
