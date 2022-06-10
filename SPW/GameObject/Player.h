@@ -37,17 +37,17 @@ typedef struct Player_s
     int m_lifeCount;
     int m_heartCount;
     int m_fireflyCount;
+	
     bool unstoppable;
+    bool m_jump;
+    bool m_bounce;
+    bool m_facingRight;
 
     float invincible_T;
     float m_hDirection;
     float m_JumpTime;
     float m_ImpulseTime;
-    float invincible_T;
-    bool m_jump;
-    bool m_bounce;
-    bool m_facingRight;
-    bool unstoppable;
+
 
 } Player;
 
