@@ -52,6 +52,7 @@ RE_Atlas *AssetManager_GetPlayerAtlas(AssetManager *assets);
 RE_Atlas *AssetManager_GetTerrainAtlas(AssetManager *assets);
 RE_Atlas *AssetManager_GetUIAtlas(AssetManager *assets);
 
+
 SDL_Texture **AssetManager_GetLayersTextures(AssetManager *assets);
 
 TTF_Font *AssetManager_GetLargeFont(AssetManager *assets);

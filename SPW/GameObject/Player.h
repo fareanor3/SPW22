@@ -34,7 +34,9 @@ typedef struct Player_s
 
     int m_state;
     int m_JumpNumber;
+    bool unstoppable;
 
+    float invincible_T;
     float m_hDirection;
     float m_JumpTime;
     float m_ImpulseTime;

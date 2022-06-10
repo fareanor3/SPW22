@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameObject\Enemy\AngryNut.c" />
     <ClCompile Include="GameObject\Terrain\Bonus.c" />
     <ClCompile Include="GameObject\Terrain\Brick.c" />
     <ClCompile Include="GameObject\UI\Button.c" />

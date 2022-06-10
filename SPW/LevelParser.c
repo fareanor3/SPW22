@@ -6,6 +6,7 @@
 #include "GameObject/Player.h"
 #include "GameObject/Collectable/Firefly.h"
 #include "GameObject/Enemy/Nut.h"
+#include "GameObject/Enemy/AngryNut.h"
 #include "GameObject/Terrain/Brick.h"
 #include "GameObject/Terrain/Bonus.h"
 #include "GameObject/Terrain/MovingPlatform.h"
@@ -15,7 +16,7 @@
 
 static char validChar[] = {
     '\n', '\\', '/', 'L', 'l', 'R', 'r' , '.', '#', '=',
-    'W', 'C', 'e', 'S', 'X', 'o', '?', 'F', '+', 'M', 'B', 'A'
+    'W', 'C', 'e', 'S', 'X', 'o', '?', 'F', '+', 'M', 'B', 'A','E'
 };
 
 LevelParser *LevelParser_New(char *path)
@@ -177,7 +178,7 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
     int width = parser->m_width;
     int height = parser->m_heigth;
 
-    // Crée la TileMap
+    // Crï¿½e la TileMap
     StaticMap *map = (StaticMap *)Scene_AllocateObject(scene, Class_StaticMap);
     AssertNew(map);
 
@@ -227,6 +228,13 @@ void LevelParser_InitScene(LevelParser *parser, void *scene)
                 Nut *nut = Scene_AllocateObject(scene, Class_Nut);
                 AssertNew(nut);
                 Nut_Constructor(nut, scene, PE_Vec2_Set((float)x + 0.5f, (float)y));
+                break;
+            }
+            case 'E':
+            {
+                ANut *AngryNut = Scene_AllocateObject(scene, Class_ANut);
+                AssertNew(AngryNut);
+                AngryNut_Constructor(AngryNut, scene, PE_Vec2_Set((float)x + 0.5f, (float)y));
                 break;
             }
             case 'C': 

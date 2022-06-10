@@ -243,6 +243,9 @@
     <ClCompile Include="GameObject\UI\Text.c">
       <Filter>Fichiers sources\GameObject\UI</Filter>
     </ClCompile>
+    <ClCompile Include="GameObject\Enemy\AngryNut.c">
+      <Filter>Fichiers sources\GameObject\Enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Settings.h">

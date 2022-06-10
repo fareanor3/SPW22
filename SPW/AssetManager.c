@@ -84,7 +84,7 @@ RE_Atlas *AssetManager_GetPlayerAtlas(AssetManager *assets)
     return atlases->m_player;
 }
 
-RE_Atlas *AssetManager_GetEnemyAtlas(AssetManager *assets)
+RE_Atlas * AssetManager_GetEnemyAtlas(AssetManager *assets)
 {
     GameAtlases *atlases = &assets->m_atlases;
     if (!atlases->m_enemy)

@@ -96,7 +96,7 @@ void Spike_OnCollisionStay(PE_Collision *collision)
     {
         Player *player = Object_Cast(otherGameBody, Class_Player);
         Player_Bounce(player);
-        if (player->m_state != PLAYER_DYING) {
+        if (player->m_state != PLAYER_DYING && player->unstoppable == false) {
             Player_Damage(player);
         }
     }

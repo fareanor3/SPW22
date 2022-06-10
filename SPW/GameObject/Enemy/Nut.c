@@ -92,6 +92,7 @@ void Nut_Constructor(void *self, void *scene, PE_Vec2 startPos)
 
     Nut *nut = Object_Cast(self, Class_Nut);
     nut->m_state = NUT_IDLE;
+    nut->m_speed = 5.0f;
 
     Nut_CreateAnimator(nut, scene);
     Scene_SetToRespawn(scene, self, true);
@@ -188,11 +189,22 @@ void Nut_OnCollisionStay(PE_Collision *collision)
         Player *player = Object_Cast(otherGameBody, Class_Player);
 
         float angle = PE_Vec2_AngleDeg(manifold.normal, PE_Vec2_Down);
-        if (angle > 55.0f)
+        if (angle > 55.0f && player->unstoppable == false)
         {
             Player_Damage(player);
         }
         return;
+    }
+
+	// Collision avec les mur
+    if (PE_Collider_CheckCategory(otherCollider, FILTER_TERRAIN))
+    {
+        float angle = PE_Vec2_AngleDeg(manifold.normal, PE_Vec2_Left);
+
+        if (angle == 180.0f || angle == 0.0f)
+        {
+            nut->m_speed *= -1.0f;
+        }	
     }
 
     if (nut->m_state == NUT_DYING)
@@ -244,6 +256,7 @@ void Nut_VM_FixedUpdate(void *self)
 
     // Calcule la distance entre le joueur et la noisette
     float dist = PE_Vec2_Distance(position, playerPos);
+	float direction = (position.x - playerPos.x);
 
     if (dist > 24.0f)
     {
@@ -255,9 +268,17 @@ void Nut_VM_FixedUpdate(void *self)
     else if (dist <= 5.0f && nut->m_state == NUT_IDLE)
     {
         // Le joueur est à moins de 5 tuiles de la noisette
-        nut->m_state = NUT_SPINNING;
+        nut->m_state = NUT_SPINNING; 
         velocity = PE_Vec2_Set(-3.f, 10.f);
+        if (direction >= 0.0f){
+            velocity.x = -15.0f;
+        }
+        else if (direction < 0.0f){
+            velocity.x = 10.f;
+        }   
     }
+    velocity.x = nut->m_speed;
+    
 
     PE_Body_SetVelocity(body, velocity);
 }
@@ -266,6 +287,7 @@ void Nut_VM_OnRespawn(void *self)
 {
     Nut *nut = Object_Cast(self, Class_Nut);
     nut->m_state = NUT_IDLE;
+    nut->m_speed = 5.0f;
 
     GameBody_EnableBody(self);
 
@@ -276,7 +298,7 @@ void Nut_VM_OnRespawn(void *self)
     PE_Body_ClearForces(body);
 
     RE_Animator_StopAnimations(nut->m_animator);
-    RE_Animator_PlayAnimation(nut->m_animator, "Idle");
+    RE_Animator_PlayAnimation(nut->m_animator, "Spinning");
 }
 
 void Nut_VM_Render(void *self)
