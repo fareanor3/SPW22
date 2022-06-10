@@ -74,7 +74,7 @@ void Heart_Constructor(void* self, void* scene, PE_Vec2 startPos)
     Object_SetClass(self, Class_Heart);
 
     Heart* heart = Object_Cast(self, Class_Heart);
-    heart->m_speed = 5.0f;
+    heart->m_speed = 2.0f;
 
     Heart_CreateAnimator(heart, scene);
     Scene_SetToRespawn(scene, self, true);
@@ -169,6 +169,9 @@ void Heart_VM_FixedUpdate(void* self)
 {
     Heart* heart = Object_Cast(self, Class_Heart);
     PE_Body* body = GameBody_GetBody(self);
+
+    if (!body) return;
+	
     PE_Vec2 position = PE_Body_GetPosition(body);
     PE_Vec2 velocity = PE_Body_GetLocalVelocity(body);
 	
@@ -181,7 +184,6 @@ void Heart_VM_FixedUpdate(void* self)
     }
 	
     velocity.x = heart->m_speed;
-    velocity = PE_Vec2_Set(0.5f, 0.0f);
 	
 	
     PE_Body_SetVelocity(body, velocity);
@@ -196,7 +198,6 @@ void Heart_VM_Update(void* self)
 void Heart_VM_OnRespawn(void* self)
 {
     Heart* heart = Object_Cast(self, Class_Heart);
-    heart->m_speed = 2.0f;
 	
     Scene* scene = GameObject_GetScene(self);
 	

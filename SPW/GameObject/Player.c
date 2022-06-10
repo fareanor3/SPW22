@@ -447,13 +447,17 @@ void Player_VM_FixedUpdate(void *self)
     // *  0.0f si le joueur n'accélère pas ;
     // * +1.0f si le joueur accélère vers la droite ;
     // * -1.0f si le joueur accélère vers la gauche.
-    player->m_facingRight = true;
 
     // s'orriende la direction gauche quand on touche a fleche
-	if (player->m_hDirection < 0.0f)
+    if(player->m_hDirection == 1.0f)
+	{
+		player->m_facingRight = true;
+	}
+	else if(player->m_hDirection == -1.0f)
 	{
 		player->m_facingRight = false;
 	}
+    
     //--------------------------------------------------------------------------
     // Modification de la vitesse et application des forces
 

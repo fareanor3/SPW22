@@ -100,7 +100,13 @@ void LevelScene_Constructor(void *self, SDL_Renderer *renderer, int levelIdx)
         float factors[] = { 0.0f, 0.05f, 0.3f, 0.6f, 0.7f };
         shiftFactors = factors;
     }   break;
-
+    case THEME_HELL:
+    {
+        worldDim = PE_Vec2_Set(36.0f, 36.0f * 1080.0f / 2880.0f);
+        layerCount = 4;
+        float factors[] = { 0.0f, 0.05f, 0.3f, 0.6f, 1.4f };
+        shiftFactors = factors;
+    }    break;
     case THEME_MOUNTAINS:
     default:
     {

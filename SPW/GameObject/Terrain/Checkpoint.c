@@ -100,7 +100,7 @@ void Checkpoint_VM_Start(void *self)
     PE_ColliderDef_SetDefault(&colliderDef);
     colliderDef.filter.categoryBits = FILTER_TERRAIN;
     colliderDef.isTrigger = true;
-    PE_Shape_SetAsBox(&colliderDef.shape, -0.4f, 0.0f, 0.4f, 1.9f);
+    PE_Shape_SetAsBox(&colliderDef.shape, -0.9f, 0.0f, 0.9f, 1.6f);
 
     collider = PE_Body_CreateCollider(body, &colliderDef);
     AssertNew(collider);

@@ -5,12 +5,13 @@
 
 extern RE_Timer *g_time;
 
-#define LEVEL_COUNT 2
+#define LEVEL_COUNT 3
 
 typedef enum GameTheme_e
 {
     THEME_MOUNTAINS,
-    THEME_LAKE
+    THEME_LAKE,
+	THEME_HELL
 } GameTheme;
 
 typedef struct LevelProgress_s

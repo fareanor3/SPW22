@@ -1,6 +1,6 @@
 //#define FULLSCREEN
 
-#define FULLSCREEN
+//#define FULLSCREEN
 //#define FHD
 
 #define SKIP_MENU

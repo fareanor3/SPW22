@@ -74,7 +74,8 @@ void ANut_CreateAnimator(ANut* Angrynut, void* scene)
 
     anim = RE_Animator_CreateTextureAnim(animator, "AngrySpinning", partS);
     AssertNew(anim);
-    RE_Animation_SetCycleCount(anim, 0);
+    RE_Animation_SetCycleCount(anim, -1);
+    RE_Animation_SetCycleTime(anim, 0.35f);
 
     // Animation "Dying"
     RE_AtlasPart* partD = RE_Atlas_GetPart(atlas, "AngryNutDying");
@@ -91,7 +92,7 @@ void AngryNut_Constructor(void* self, void* scene, PE_Vec2 startPos)
     Object_SetClass(self, Class_ANut);
 
     ANut* Angrynut = Object_Cast(self, Class_ANut);
-    Angrynut->m_state = ANGRYNUT_IDLE;
+    Angrynut->m_state = ANGRYNUT_SPINNING;
 
     ANut_CreateAnimator(Angrynut, scene);
     Scene_SetToRespawn(scene, self, true);
@@ -181,7 +182,15 @@ void ANut_OnCollisionStay(PE_Collision* collision)
     GameBody* thisGameBody = GameBody_GetFromBody(thisBody);
     GameBody* otherGameBody = GameBody_GetFromBody(otherBody);
     ANut* Angrynut = Object_Cast(thisGameBody, Class_ANut);
+    Scene* scene = GameObject_GetScene(Angrynut);
 
+
+    //désactive les collisions quand la noisette meurt -> disabled quand position.y <-2
+    if (Angrynut->m_state == ANGRYNUT_DYING)
+    {
+        PE_Collision_SetEnabled(collision, false);
+        return;
+    }
     // Collision avec le joueur
     if (PE_Collider_CheckCategory(otherCollider, FILTER_PLAYER))
     {
@@ -195,10 +204,6 @@ void ANut_OnCollisionStay(PE_Collision* collision)
         return;
     }
 
-    if (Angrynut->m_state == ANGRYNUT_DYING)
-    {
-        PE_Collision_SetEnabled(collision, false);
-    }
 }
 
 void ANut_VM_DrawGizmos(void* self)
@@ -241,10 +246,25 @@ void ANut_VM_FixedUpdate(void* self)
     Scene* scene = GameObject_GetScene(self);
     Player* player = LevelScene_GetPlayer(scene);
     PE_Vec2 playerPos = GameBody_GetPosition(player);
+    PE_World* world = Scene_GetWorld(scene);
 
     // Calcule la distance entre le joueur et la noisette
     float dist = PE_Vec2_Distance(position, playerPos);
     float direction = (position.x - playerPos.x);
+
+    //détection du sol
+    AngryNut->onGround = false;
+    PE_Vec2 gndNormal = PE_Vec2_Up;
+    PE_Vec2 origin = PE_Vec2_Add(position, PE_Vec2_Set(0.0f, 0.0f));
+    PE_RayCastHit hit = PE_World_RayCast(
+        world, origin, PE_Vec2_Down, 0.1f, FILTER_TERRAIN, true
+    );
+    if (hit.collider != NULL)
+    {
+        // Le rayon gauche à touché le sol
+        AngryNut->onGround = true;
+        gndNormal = hit.normal;
+    }
 
     if (dist > 24.0f)
     {
@@ -253,10 +273,11 @@ void ANut_VM_FixedUpdate(void* self)
         PE_Body_SetAwake(body, false);
         return;
     }
-    else if (dist <= 5.0f && AngryNut->m_state == ANGRYNUT_IDLE)
+
+    else if (dist <= 5.0f && AngryNut->m_state == ANGRYNUT_SPINNING)
     {
-        // Le joueur est � moins de 5 tuiles de la noisette
-        AngryNut->m_state = ANGRYNUT_SPINNING;
+        // Le joueur est � moins de 5 tuiles de la noisette -> la noisette attaque (toutes les deux secondes)
+        AngryNut->m_state = ANGRYNUT_IDLE;
         velocity = PE_Vec2_Set(-3.f, 10.f);
         if (direction >= 0.0f) {
             velocity.x = -15.0f;
@@ -265,6 +286,12 @@ void ANut_VM_FixedUpdate(void* self)
             velocity.x = 10.f;
         }
     }
+    //quand la noisette n'attaque pas, elle rebondie sur le sol pour exprimer sa colère....
+    if (dist > 5.0f && AngryNut->onGround == true)
+    {
+        velocity.y = 10.0f;
+        AngryNut->onGround = false;
+    }
 
     PE_Body_SetVelocity(body, velocity);
 }
@@ -272,7 +299,7 @@ void ANut_VM_FixedUpdate(void* self)
 void ANut_VM_OnRespawn(void* self)
 {
     ANut* AngryNut = Object_Cast(self, Class_ANut);
-    AngryNut->m_state = ANGRYNUT_IDLE;
+    AngryNut->m_state = ANGRYNUT_SPINNING;
 
     GameBody_EnableBody(self);
 
@@ -283,7 +310,7 @@ void ANut_VM_OnRespawn(void* self)
     PE_Body_ClearForces(body);
 
     RE_Animator_StopAnimations(AngryNut->m_animator);
-    RE_Animator_PlayAnimation(AngryNut->m_animator, "AngryIdle");
+    RE_Animator_PlayAnimation(AngryNut->m_animator, "AngrySpinning");
 }
 
 void ANut_VM_Render(void* self)
@@ -310,6 +337,16 @@ void ANut_VM_Render(void* self)
 void ANut_VM_Update(void* self)
 {
     ANut* Angrynut = Object_Cast(self, Class_ANut);
+    //timer pour les attaques de la noisette
+    if (Angrynut->m_state == ANGRYNUT_IDLE)
+    {
+        Angrynut->attack_T += RE_Timer_GetUnscaledDelta(g_time);
+        if (Angrynut->attack_T > 2.0f)
+        {
+            Angrynut->m_state = ANGRYNUT_SPINNING;
+            Angrynut->attack_T = 0;
+        }
+    }
 
     RE_Animator_Update(Angrynut->m_animator, g_time);
 }

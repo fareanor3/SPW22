@@ -6,7 +6,7 @@
 void Class_InitANut();
 
 /// @brief Description de la classe "Nut".
-extern const void *const Class_ANut;
+extern const void* const Class_ANut;
 
 typedef struct ANutClass_s {
     const EnemyClass base;
@@ -25,12 +25,16 @@ typedef struct ANut_s
         Enemy base;
     } m_super;
 
-    RE_Animator *m_animator;
+    RE_Animator* m_animator;
 
     int m_state;
+    float m_speed;
+    bool onGround;
+    bool attack;
+    float attack_T;
 
 } ANut;
 
-void AngryNut_Constructor(void *self, void *scene, PE_Vec2 startPos);
+void AngryNut_Constructor(void* self, void* scene, PE_Vec2 startPos);
 
 #endif

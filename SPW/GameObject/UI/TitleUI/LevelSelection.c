@@ -54,6 +54,7 @@ void LevelSelection_Constructor(void *self, void *scene)
     RE_Atlas *logoAtlas = AssetManager_GetLogoAtlas(assets);
     SDL_Color mainColor = AssetManager_GetNormalColor(assets);
     SDL_Color black = { 0, 0, 0, 255 };
+    SDL_Color green = { 20, 211,25, 127 };
 
     int levelCount = LEVEL_COUNT;
     menu->m_levelCount = levelCount;
@@ -115,9 +116,18 @@ void LevelSelection_Constructor(void *self, void *scene)
 
         UIBorders borders = { 15, 15, 15, 15 };
         Button_SetBorders(button, &borders);
+		
+		// affiche la saisi du niveau
+        char* title = g_levelData[levelIdx].title;
 
-        char *title = g_levelData[levelIdx].title;
-        Button_SetTextUp(button, title, font, mainColor);
+        if (g_progress.levels[i].sucessful == true)
+        {
+            Button_SetTextUp(button, title, font, green);
+        }
+        else
+        {
+			Button_SetTextUp(button, title, font, mainColor);
+        }
         Button_SetTextHover(button, title, font, black);
         Button_SetTextDown(button, title, font, black);
     }

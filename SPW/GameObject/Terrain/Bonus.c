@@ -140,9 +140,15 @@ void Bonus_OnCollisionEnter(PE_Collision* collision)
         float angle = PE_Vec2_AngleDeg(manifold.normal, PE_Vec2_Up);
         if (angle == 0.0f)
         {
-            bonus->m_isEmpty = true;
-			RE_Animator_PlayAnimation(bonus->m_animator, "BonusEmpty");
-            Scene_SetToRespawn(scene, bonus, true);
+            if (!bonus->m_hit)
+			{
+				bonus->m_hit = true;
+				RE_Animator_PlayAnimation(bonus->m_animator, "BonusEmpty");
+                Heart* heart = Scene_AllocateObject(scene, Class_Heart);
+                AssertNew(heart);
+                Heart_Constructor(heart, scene, PE_Vec2_Set((float)thisBody->m_position.x, (float)thisBody->m_position.y+1.0f));
+                Scene_SetToRespawn(scene, bonus, true);
+			}
         }
     }
 }
@@ -152,8 +158,8 @@ void Bonus_VM_OnRespawn(void *self)
     Bonus* bonus = Object_Cast(self, Class_Bonus);
 	Scene *scene = GameObject_GetScene(self);
 	
-    if (bonus->m_isEmpty= true){
-        bonus->m_isEmpty = false;
+    if (bonus->m_hit){
+        bonus->m_hit = false;
     }
 	RE_Animator_PlayAnimation(bonus->m_animator, "BonusFull");
 }

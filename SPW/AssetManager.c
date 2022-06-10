@@ -13,7 +13,9 @@ AssetManager *AssetManager_New(SDL_Renderer *renderer, int theme)
     case THEME_LAKE:
         assets->m_themeFolder = "../Assets/Theme_Lake";
         break;
-
+    case THEME_HELL:
+		assets->m_themeFolder = "../Assets/Theme_Hell";
+		break;
     case THEME_MOUNTAINS:
     default:
         assets->m_themeFolder = "../Assets/Theme_Mountains";

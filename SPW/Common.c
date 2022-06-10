@@ -22,6 +22,11 @@ void LevelData_Init()
     g_levelData[i].theme = THEME_MOUNTAINS;
     g_levelData[i].path = "../Assets/Level/Level01.txt";
     i++;
+	
+    g_levelData[i].title = u8"Pootooo HELLLL !!";
+    g_levelData[i].theme = THEME_HELL;
+    g_levelData[i].path = "../Assets/Level/Pootooo_HELLLL.txt";
+    i++;
 
     g_levelData[i].title = u8"Démo";
     g_levelData[i].theme = THEME_LAKE;
