@@ -1,4 +1,4 @@
-[HomePage](https://github.com/fareanor3)
+![HomePage](https://github.com/fareanor3/SPW22/blob/78c97108579699af0f45a4970a1d8f96d398753d/Homepage.png)
 
 # SPW_Basecode
 
@@ -40,11 +40,11 @@ platforms all
 checkpoint
 brick
 
-## menu
+## Menu
 
-New world 
-theme 
-level
+New worlds 
+themes 
+levels
 color level when successful
 
-[InGame](https://github.com/fareanor3)
+![InGame](https://github.com/fareanor3/SPW22/blob/78c97108579699af0f45a4970a1d8f96d398753d/InGame.png)
